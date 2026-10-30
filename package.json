@@ -1,0 +1,11 @@
+{
+  "name": "hr-document-hub-ai-matcher",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:worker": "node tests/worker-smoke-test.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.36.0"
+  }
+}

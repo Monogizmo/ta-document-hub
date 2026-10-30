@@ -126,7 +126,7 @@ const privacy='ไฟล์ถูกประมวลผลบนเครื�
 function card(id){const t=T[id];return`<button class="tool" data-go="${id}"><b>${t.n}${t.p?`<span class="tag">Phase ${t.p}</span>`:''}</b><span>${t.d}</span></button>`}
 const V={
 home(){const q=['merge','compress','word2pdf','checker','img2pdf','jd','sign','offer'];
-return`<span class="badge">Local Processing | No Login | No Cloud File Storage</span><h1>HR Document Hub</h1><p class="sub">พื้นที่ทำงานสำหรับเตรียมเอกสาร จัดการ PDF และงานเอกสารสรรหาบุคลากร</p>
+return`<span class="badge">Local PDF Processing | Optional AI Analysis</span><h1>HR Document Hub</h1><p class="sub">พื้นที่ทำงานสำหรับเตรียมเอกสาร จัดการ PDF และงานเอกสารสรรหาบุคลากร</p>
 <h2>ทางลัด</h2><div class="grid">${q.map(card).join('')}</div>
 ${Object.entries(CAT).map(([c,n])=>`<h2>${n}</h2><div class="grid">${Object.keys(T).filter(k=>T[k].c===c).map(card).join('')}</div>`).join('')}
 <p class="mt">เครื่องมือที่มีป้าย Phase ยังไม่พร้อมใช้งาน ระบบจะแจ้งสถานะจริงเมื่อเปิดหน้านั้น</p>`},
@@ -134,7 +134,7 @@ cat(){return`<h1>${CAT[arg]}</h1><p class="sub">เลือกเครื่�
 planned(){const t=T[arg];return`<h1>${t.n}</h1><div class="card"><span class="pill wn">ยังไม่พร้อมใช้งาน · วางแผนไว้ใน Phase ${t.p}</span><p>${t.d}</p><p class="mt">ฟังก์ชันนี้ยังไม่ถูกพัฒนา จึงไม่มีปุ่มที่ใช้งานได้ ระหว่างนี้ใช้เครื่องมือ Phase 1 ในแถบซ้ายแทนได้</p><button class="btn s" data-go="home">กลับหน้าแรก</button></div>`},
 settings(){return`<h1>Settings & Privacy</h1>
 <div class="card"><b>ธีม</b><div class="row"><select id="theme"><option value="">ตามระบบ</option><option value="light">สว่าง</option><option value="dark">มืด</option></select></div><p class="mt">การตั้งค่าเลือกภาษา, ชื่อไฟล์ตั้งต้น และค่าอื่นๆ จะเพิ่มใน Phase ถัดไป หน้านี้ไม่บันทึกค่าใดๆ ไว้ในเบราว์เซอร์</p></div>
-<div class="card"><b>ความเป็นส่วนตัว</b><p>${privacy}</p><ul class="mt"><li>ไม่ต้องล็อกอิน ไม่มีฐานข้อมูล ไม่เก็บไฟล์ถาวร</li><li>เอกสาร ชื่อไฟล์ และข้อความที่ดึงออกมาไม่ถูกส่งออกจากเครื่อง</li><li>ข้อมูลหายเมื่อรีเฟรชหรือปิดหน้านี้</li><li>หน้าเว็บนี้ดึงไลบรารีประมวลผล (pdf.js, pdf-lib, jsPDF, JSZip) และฟอนต์จาก cdnjs/Google Fonts เมื่อเปิดหน้า ซึ่งไม่ใช่ข้อมูลเอกสารของคุณ หากต้องการปิดการเชื่อมต่อภายนอกทั้งหมด ให้นำไลบรารีไปโฮสต์เองในเครื่องมือภายในองค์กร</li><li>ความปลอดภัยยังขึ้นกับอุปกรณ์และส่วนขยายเบราว์เซอร์ของคุณ</li></ul></div>`}
+<div class="card"><b>ความเป็นส่วนตัว</b><p>${privacy}</p><ul class="mt"><li>ไม่ต้องล็อกอิน ไม่มีฐานข้อมูล ไม่เก็บไฟล์ถาวร</li><li>เครื่องมือ PDF ทั่วไปประมวลผลใน Browser; หากใช้ AI CV Matcher ระบบจะส่งเฉพาะข้อความที่ดึงจากเอกสารไปยัง Backend และ OpenAI API หลังผู้ใช้ยืนยัน</li><li>ข้อมูลหายเมื่อรีเฟรชหรือปิดหน้านี้</li><li>หน้าเว็บนี้ดึงไลบรารีประมวลผล (pdf.js, pdf-lib, jsPDF, JSZip) และฟอนต์จาก cdnjs/Google Fonts เมื่อเปิดหน้า ซึ่งไม่ใช่ข้อมูลเอกสารของคุณ หากต้องการปิดการเชื่อมต่อภายนอกทั้งหมด ให้นำไลบรารีไปโฮสต์เองในเครื่องมือภายในองค์กร</li><li>ความปลอดภัยยังขึ้นกับอุปกรณ์และส่วนขยายเบราว์เซอร์ของคุณ</li></ul></div>`}
 };
 
 /* ---------- Checker ---------- */
@@ -643,7 +643,7 @@ document.addEventListener('pointerup',()=>{if(DR&&DR.k!=='sp')R();DR=null});
 new MutationObserver(()=>{if(cur!=='sign'&&cur!=='redact')return;const C=S[cur];if(C.file&&VW.tool!==cur){if(!VW.opening){VW.opening=1;vwOpen(C.file,cur).then(()=>{VW.opening=0;R()}).catch(()=>{VW.opening=0})}}else if(VW.tool===cur&&$('#vc'))vwRender()}).observe($('#main'),{childList:true});
 const stl2=document.createElement('style');stl2.textContent=`.it{position:absolute;border:1px dashed var(--br);touch-action:none;cursor:move;box-sizing:border-box}.it.rect{background:rgba(0,0,0,.8);border:2px solid #c00}.it .x{position:absolute;top:-12px;right:-12px;width:24px;height:24px;border-radius:50%;background:#b91c1c;color:#fff;text-align:center;line-height:22px;cursor:pointer;font-size:16px}.it .rs{position:absolute;right:-8px;bottom:-8px;width:16px;height:16px;background:var(--y);border:2px solid var(--br);border-radius:4px;cursor:nwse-resize}`;document.head.appendChild(stl2);
 TASKS.splice(0,TASKS.length,['unlock','Unlock PDF','ใส่รหัสของไฟล์เพื่อปลดล็อก',IC(`<rect x='4' y='11' width='16' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 7-2.6'/>`)],['merge','Merge PDF','รวมหลายไฟล์เป็นไฟล์เดียว จัดลำดับได้',IC(`<path d='M6 3v6a6 6 0 0 0 6 6h6M18 12l3 3-3 3M6 21v-3'/>`)],['protect','Protect PDF','ตั้งรหัสผ่านเปิดไฟล์',IC(`<rect x='4' y='11' width='16' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/>`)],['checker','PDF Checker','ตรวจชื่อ ขนาด โครงสร้าง แล้วแก้ในครั้งเดียว',IC(`<rect x='4' y='3' width='16' height='18' rx='2'/><path d='M9 12l2 2 4-4'/>`)],['jd','สร้าง JD','กรอกฟอร์มแล้วได้ PDF ส่งผู้สมัคร',IC(`<path d='M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z'/><path d='M14 3v5h5M9 13h6M9 17h6'/>`)]);
-V.home=()=>`<section class='hero'><span class='badge'>Local Processing | No Login | No Cloud File Storage</span><h1 class='h1x'>HR Document Hub</h1><p class='sub'>พื้นที่ทำงานสำหรับเตรียมเอกสาร จัดการ PDF และงานเอกสารสรรหาบุคลากร</p></section><label class='drop big' data-tool='smart'><b>ลากไฟล์มาวางที่นี่ หรือแตะเพื่อเลือก</b><span>ระบบจะแนะนำเครื่องมือที่เหมาะกับไฟล์ของคุณ · ${privacy}</span><input type='file' multiple data-tool='smart'></label>${HOME.files.length?`<div class='card'><b>${HOME.files.length} ไฟล์:</b> ${esc(HOME.files.slice(0,5).map(f=>f.name).join(', '))}${HOME.files.length>5?' ...':''}<div class='row'>${sg().map(([t,l])=>`<button class='btn' data-sg='${t}'>${l}</button>`).join('')}</div></div>`:''}<h2>งานที่ทำบ่อย</h2><div class='grid'>${TASKS.map(([id,n,d,ic])=>`<button class='task' data-go='${id}'><i>${ic}</i><b>${n}</b><span>${d}</span></button>`).join('')}</div><p class='mt'>เครื่องมือทั้งหมดอยู่ที่เมนูด้านซ้าย</p>`;
+V.home=()=>`<section class='hero'><span class='badge'>Local PDF Processing | Optional AI Analysis</span><h1 class='h1x'>HR Document Hub</h1><p class='sub'>พื้นที่ทำงานสำหรับเตรียมเอกสาร จัดการ PDF และงานเอกสารสรรหาบุคลากร</p></section><label class='drop big' data-tool='smart'><b>ลากไฟล์มาวางที่นี่ หรือแตะเพื่อเลือก</b><span>ระบบจะแนะนำเครื่องมือที่เหมาะกับไฟล์ของคุณ · ${privacy}</span><input type='file' multiple data-tool='smart'></label>${HOME.files.length?`<div class='card'><b>${HOME.files.length} ไฟล์:</b> ${esc(HOME.files.slice(0,5).map(f=>f.name).join(', '))}${HOME.files.length>5?' ...':''}<div class='row'>${sg().map(([t,l])=>`<button class='btn' data-sg='${t}'>${l}</button>`).join('')}</div></div>`:''}<h2>งานที่ทำบ่อย</h2><div class='grid'>${TASKS.map(([id,n,d,ic])=>`<button class='task' data-go='${id}'><i>${ic}</i><b>${n}</b><span>${d}</span></button>`).join('')}</div><p class='mt'>เครื่องมือทั้งหมดอยู่ที่เมนูด้านซ้าย</p>`;
 V.cat=()=>`<h1>${CAT[arg]}</h1><p class='sub'>เลือกเครื่องมือ</p><div class='grid'>${Object.keys(T).filter(k=>T[k].c===arg&&!T[k].p).map(card).join('')||"<p class='mt'>ยังไม่มีเครื่องมือที่พร้อมใช้ในหมวดนี้ ดูที่แผนงาน</p>"}</div>`;
 V.roadmap=()=>`<h1>แผนงาน</h1><p class='sub'>ฟังก์ชันที่ยังไม่พร้อมใช้งาน</p>${[4,5].map(p=>`<h2>Phase ${p}</h2><div class='grid'>${Object.keys(T).filter(k=>T[k].p===p).map(card).join('')}</div>`).join('')}`;
 NAV.splice(NAV.length-1,0,['roadmap','แผนงาน']);
@@ -651,6 +651,192 @@ const LASTT=['checker','merge','pack','split','compress','organize','watermark',
 new MutationObserver(()=>{if(!LAST||!LASTT.includes(cur)||$('#last'))return;const C=S[cur];if(cur==='checker'||cur==='merge'||cur==='pack'?C.items.length:C.file)return;const h=$('#main h1');if(h)h.insertAdjacentHTML('afterend',`<div id='last' class='card row'><span>ไฟล์ล่าสุดจากเครื่องมือก่อนหน้า: <b>${esc(LAST.file.name)}</b> (${mb(LAST.file.size)})</span><button class='btn sm' data-use='1'>ใช้ไฟล์นี้</button><button class='btn g sm' data-lastclr='1'>ล้าง</button></div>`)}).observe($('#main'),{childList:true});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-use],[data-lastclr],[data-sg]');if(!t)return;if(t.dataset.use)ADD[cur]([LAST.file]);else if(t.dataset.lastclr){LAST=null;const l=$('#last');l&&l.remove()}else{const k=t.dataset.sg,fs=HOME.files;go(k);ADD[k](fs)}});
 V.pack=()=>{if(S.merge.name==='merged.pdf')S.merge.name='Candidate_Document_Pack.pdf';return V.merge().replace('Merge PDF</h1>',`Candidate Document Pack</h1><div class='note'>ตรวจรายการก่อนรวมทุกครั้ง ระบบไม่เลือกเอกสารภายในออกให้อัตโนมัติ</div>`)};
+
+/* ===== AI CV Matcher: batch evidence analysis ===== */
+const AI_MATCH = {
+  workerUrl: '', accessCode: '', jdFile: null, jdText: '',
+  cvs: [], results: [], criteriaText: 'ทักษะที่จำเป็น | 35\nประสบการณ์ที่เกี่ยวข้อง | 30\nคุณสมบัติที่กำหนด | 25\nทักษะเพิ่มเติม | 10',
+  anonymize: true, consent: false, running: false, current: 0, progressText: ''
+};
+T.aiMatcher={n:'AI CV Matcher',d:'วิเคราะห์ JD เทียบกับ CV หลายคน พร้อมหลักฐาน จุดแข็ง และคำถามสัมภาษณ์',c:'hr',p:0};
+NAV.splice(NAV.length-1,0,['ai-matcher','AI CV Matcher']);
+
+function aiCriteria(){
+  const rows=AI_MATCH.criteriaText.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const out=[];
+  for(const row of rows){
+    const m=row.match(/^(.*?)\s*[|,:：]\s*(\d+(?:\.\d+)?)\s*%?$/);
+    if(!m)throw Error('รูปแบบเกณฑ์ไม่ถูกต้อง ใช้รูปแบบ ชื่อเกณฑ์ | น้ำหนัก');
+    const name=m[1].trim(),weight=Number(m[2]);
+    if(!name||name.length>120||!Number.isFinite(weight)||weight<=0||weight>100)throw Error('ชื่อเกณฑ์หรือน้ำหนักไม่ถูกต้อง');
+    if(out.some(x=>x.name.toLowerCase()===name.toLowerCase()))throw Error('ชื่อเกณฑ์ต้องไม่ซ้ำกัน');
+    out.push({name,weight});
+  }
+  if(out.length<1||out.length>10)throw Error('กำหนดเกณฑ์ได้ 1–10 ข้อ');
+  const total=out.reduce((a,x)=>a+x.weight,0);
+  if(Math.abs(total-100)>0.001)throw Error('น้ำหนักเกณฑ์รวมต้องเท่ากับ 100% (ปัจจุบัน '+total+'%)');
+  return out;
+}
+
+function aiMaskIdentifiers(text){
+  // Best-effort pattern masking only. Users must still review the document before sending.
+  return String(text||'')
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[EMAIL REDACTED]')
+    .replace(/\b(?:\+?66[- .]?)?(?:0?\d[- .]?){8,10}\b/g,'[PHONE REDACTED]')
+    .replace(/\b\d{13}\b/g,'[ID NUMBER REDACTED]')
+    .replace(/^(\s*(?:ชื่อ(?:-นามสกุล)?|name|candidate name|applicant name|วันเกิด|date of birth|อายุ|age|เพศ|gender|ที่อยู่|address|marital status|สถานภาพสมรส)\s*[:：]).*$/gim,'$1 [REDACTED]');
+}
+
+async function aiReadDocument(file, kind){
+  const ext=extName(file.name);
+  if(!['pdf','docx'].includes(ext))throw Error('รองรับเฉพาะ PDF และ DOCX ในรุ่นนี้');
+  if(file.size===0)throw Error('ไฟล์ว่าง');
+  if(file.size>(kind==='jd'?10:8)*1048576)throw Error('ไฟล์ใหญ่เกินกำหนด ('+(kind==='jd'?'10':'8')+' MB)');
+  let text='';
+  if(ext==='pdf'){
+    const doc=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+    if(doc.numPages>30){doc.destroy();throw Error('PDF มีมากกว่า 30 หน้า กรุณาเลือกไฟล์/ช่วงเอกสารที่เกี่ยวข้อง');}
+    const pages=[];
+    for(let i=1;i<=doc.numPages;i++){
+      const page=await doc.getPage(i),content=await page.getTextContent();
+      pages.push(content.items.map(x=>x.str||'').filter(Boolean).join(' '));
+    }
+    doc.destroy();text=pages.join('\n');
+  }else{
+    const zip=await JSZip.loadAsync(file),xmlFile=zip.file('word/document.xml');
+    if(!xmlFile)throw Error('ไม่พบเนื้อหา Word ในไฟล์ DOCX');
+    const xml=await xmlFile.async('string'),parsed=new DOMParser().parseFromString(xml,'application/xml');
+    if(parsed.querySelector('parsererror'))throw Error('อ่านโครงสร้าง DOCX ไม่สำเร็จ');
+    const ns='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    const paragraphs=Array.from(parsed.getElementsByTagNameNS(ns,'p'));
+    text=paragraphs.map(p=>Array.from(p.getElementsByTagNameNS(ns,'t')).map(t=>t.textContent||'').join('')).join('\n');
+  }
+  text=String(text||'').replace(/\u0000/g,' ').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+  if(text.length<80)throw Error('อ่าน Text จากเอกสารได้น้อยมาก อาจเป็น PDF สแกน/ภาพ (รุ่นนี้ยังไม่มี OCR)');
+  const max=kind==='jd'?25000:45000;
+  if(text.length>max)throw Error('ข้อความยาวเกิน '+max.toLocaleString()+' ตัวอักษร กรุณาย่อเอกสารให้เหลือเฉพาะส่วนที่เกี่ยวข้อง');
+  return text;
+}
+
+function aiScore(result,criteria){
+  const normalized=s=>String(s||'').trim().toLowerCase();
+  let earned=0,assessable=0,unknown=0;
+  const items=criteria.map(c=>{
+    const found=(result.criteria_assessment||[]).find(x=>normalized(x.criterion)===normalized(c.name));
+    const item=found||{criterion:c.name,status:'unclear',evidence:'',cv_excerpt:'',explanation:'AI ไม่ได้ส่งผลประเมินสำหรับเกณฑ์นี้',verification_question:'กรุณาตรวจสอบด้วยตนเอง'};
+    if(item.status==='unclear')unknown+=c.weight;
+    else{
+      assessable+=c.weight;
+      earned+=c.weight*(item.status==='evidenced'?1:item.status==='partial'?.5:0);
+    }
+    return {...item,criterion:c.name,weight:c.weight};
+  });
+  return {score:assessable?Math.round(earned/assessable*100):null,coverage:Math.round(assessable),unknownWeight:Math.round(unknown),items};
+}
+
+function aiStatusLabel(status){return ({evidenced:'พบหลักฐาน',partial:'พบหลักฐานบางส่วน',not_stated:'ไม่พบใน CV',unclear:'ต้องตรวจสอบ'})[status]||'ต้องตรวจสอบ';}
+function aiResultCard(item,index){
+  if(item.error)return `<div class="card"><div class="top"><b>Candidate ${String(index+1).padStart(2,'0')} · ${esc(item.fileName)}</b><span class="pill er">วิเคราะห์ไม่สำเร็จ</span></div><p class="mt">${esc(item.error)}</p></div>`;
+  const r=item.result,s=item.scoring;
+  return `<div class="card" style="margin-top:12px"><div class="top"><div><b>Candidate ${String(index+1).padStart(2,'0')}</b><div class="mt">${esc(item.fileName)}</div></div><span class="pill ok">วิเคราะห์แล้ว</span></div>
+  <div class="row" style="align-items:center;margin:12px 0"><div style="min-width:120px"><div style="font-size:12px;color:var(--tx)">Evidence Match Score</div><strong style="font-size:30px;color:var(--br)">${s.score===null?'—':s.score+'/100'}</strong></div><div style="flex:1;min-width:140px"><div class="bar"><i style="width:${s.score===null?0:s.score}%"></i></div><div class="mt">ประเมินได้ ${s.coverage}% ของน้ำหนักเกณฑ์ · ต้องตรวจสอบ ${s.unknownWeight}%</div></div></div>
+  <p><b>Candidate Summary</b><br>${esc(r.candidate_summary)}</p>
+  <h3 style="font-size:15px;color:var(--br)">Criteria Evidence</h3><p class="mt">“ไม่พบใน CV” หมายถึงเอกสารไม่แสดงหลักฐานเท่านั้น ไม่ได้แปลว่าผู้สมัครไม่มีทักษะนั้น</p>
+  ${s.items.map(c=>`<div class="chk ${c.status==='evidenced'?'ok':'wn'}"><span class="t">${c.status==='evidenced'?'✓':c.status==='not_stated'?'–':'!'}</span><div style="flex:1"><b>${esc(c.criterion)} (${c.weight}%) · ${aiStatusLabel(c.status)}</b><small>${esc(c.explanation||'')}${c.evidence?'<br><b>Evidence:</b> '+esc(c.evidence):''}${c.cv_excerpt?'<br><b>CV excerpt:</b> “'+esc(c.cv_excerpt)+'”':''}${c.verification_question?'<br><b>ถามเพิ่มเติม:</b> '+esc(c.verification_question):''}</small></div></div>`).join('')}
+  <details><summary>จุดแข็ง · ข้อมูลที่ยังขาด · คำถามสัมภาษณ์</summary>
+  <p><b>จุดแข็งที่มีหลักฐาน</b></p>${aiList(r.strengths)}<p><b>ข้อมูลที่ควรตรวจสอบเพิ่มเติม</b></p>${aiList(r.missing_information)}<p><b>Interview Suggestions</b></p>${aiList(r.interview_questions)}<p><b>ข้อจำกัดของการวิเคราะห์</b></p>${aiList(r.analysis_limitations)}</details></div>`;
+}
+function aiList(items){return Array.isArray(items)&&items.length?'<ul>'+items.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<p class="mt">ไม่มีรายการ</p>';}
+
+V.aiMatcher=()=>{
+  const A=AI_MATCH,ok=A.results.filter(x=>!x.error).length,failed=A.results.length-ok;
+  return `<h1>AI CV Matcher</h1><p class="sub">วิเคราะห์หลักฐานจาก CV หลายคนเทียบกับ JD เดียวกัน เพื่อช่วยเตรียมการสัมภาษณ์ · ไม่ใช่ระบบตัดสินรับ/ไม่รับผู้สมัคร</p>
+  <div class="note">ข้อมูลที่ส่งให้ AI จะออกจาก Browser ไปยัง Backend ที่คุณกำหนด และส่งต่อไปยัง OpenAI API ฟังก์ชันนี้ไม่ใช่ Local Processing แบบ PDF Tools กรุณาใช้เฉพาะเอกสารที่ได้รับอนุญาตและผ่านการตรวจสอบนโยบายองค์กร</div>
+  <div class="card"><b>1. Backend Connection</b><p class="mt">ใส่ Worker URL และ Access Code ที่ผู้ดูแลระบบจัดเตรียมให้ (Access Code ไม่ใช่ OpenAI API Key)</p><div class="row"><label style="flex:1;min-width:240px">Worker URL <input data-ai-field="workerUrl" type="url" placeholder="https://hr-document-hub-ai.username.workers.dev" value="${esc(A.workerUrl)}" style="width:100%"></label><label style="flex:1;min-width:200px">Shared Access Code <input data-ai-field="accessCode" type="password" autocomplete="off" placeholder="Access Code" value="${esc(A.accessCode)}" style="width:100%"></label></div><p class="mt">แนะนำให้ป้องกัน Worker ด้วย Cloudflare Access สำหรับการใช้งานภายในองค์กร ส่วน Access Code ใน Prototype เป็นเพียงชั้นป้องกันเบื้องต้น</p></div>
+  <div class="card"><b>2. Job Description</b><p class="mt">เลือก JD หนึ่งไฟล์เพื่อใช้เป็นเกณฑ์เดียวกันในการวิเคราะห์ CV ทั้งชุด</p><label class="drop"><b>${A.jdFile?'JD: '+esc(A.jdFile.name):'เลือก JD PDF หรือ DOCX'}</b><span>ไม่เกิน 10 MB · PDF ต้องมี Text Layer</span><input type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" data-ai-file="jd"></label>${A.jdText?`<div class="pill ok">อ่านข้อความ JD แล้ว · ${A.jdText.length.toLocaleString()} ตัวอักษร</div>`:''}</div>
+  <div class="card"><b>3. Candidate CVs</b><p class="mt">เลือก CV หลายไฟล์ได้ในครั้งเดียว รุ่นนี้รองรับสูงสุด 15 คนต่อหนึ่ง Batch</p><label class="drop"><b>${A.cvs.length?'เลือกเพิ่ม CV (ปัจจุบัน '+A.cvs.length+' ไฟล์)':'เลือก CV PDF / DOCX หลายไฟล์'}</b><span>สูงสุด 15 ไฟล์ · PDF ไม่เกิน 8 MB ต่อไฟล์ · DOCX ไม่เกิน 8 MB</span><input type="file" multiple accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" data-ai-file="cvs"></label>${A.cvs.length?`<div>${A.cvs.map((f,i)=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--bd);padding:6px 0"><span>${String(i+1).padStart(2,'0')}. ${esc(f.name)} · ${mb(f.size)}</span><button class="btn g sm" data-ai-action="remove-cv" data-ai-index="${i}" ${A.running?'disabled':''}>ลบ</button></div>`).join('')}</div>`:''}</div>
+  <div class="card"><b>4. Assessment Criteria & Weights</b><p class="mt">กำหนดเกณฑ์จาก JD และปรับน้ำหนักให้รวมเป็น 100% ตัวอย่างนี้เป็นเพียงค่าเริ่มต้น</p><textarea data-ai-field="criteriaText" rows="5" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit">${esc(A.criteriaText)}</textarea><p class="mt">รูปแบบ: ชื่อเกณฑ์ | น้ำหนัก เช่น ทักษะที่จำเป็น | 35</p></div>
+  <div class="card"><b>5. Privacy & Human Review</b><label style="display:flex;align-items:flex-start;margin:8px 0"><input type="checkbox" data-ai-field="anonymize" ${A.anonymize?'checked':''} style="margin:4px 8px 0 0"><span>ปกปิดอีเมล เบอร์โทร เลขประจำตัว และข้อมูลระบุตัวตนบางรูปแบบก่อนส่ง (Best-effort; ไม่รับประกันว่าปกปิดได้ทั้งหมด)</span></label><label style="display:flex;align-items:flex-start;margin:8px 0"><input type="checkbox" data-ai-field="consent" ${A.consent?'checked':''} style="margin:4px 8px 0 0"><span>ฉันยืนยันว่าได้รับอนุญาตให้ใช้ข้อมูลนี้กับ AI API ตามนโยบายองค์กรแล้ว และได้ตรวจสอบ/ลดข้อมูลส่วนบุคคลที่ไม่จำเป็นก่อนส่ง</span></label><div class="note">ห้ามใช้ AI ประเมินอายุ เพศ รูปถ่าย เชื้อชาติ ศาสนา สุขภาพ สถานภาพครอบครัว หรือคุณลักษณะส่วนบุคคลอื่น ๆ และห้ามใช้คะแนนนี้ตัดผู้สมัครออกโดยอัตโนมัติ HR ต้องตรวจหลักฐานและตัดสินใจเอง</div><div class="row"><button class="btn" data-ai-action="run" ${A.running?'disabled':''}>${A.running?'กำลังวิเคราะห์...':'Analyze '+A.cvs.length+' CVs'}</button><button class="btn g" data-ai-action="clear" ${A.running?'disabled':''}>ล้างผลวิเคราะห์</button></div>${A.running?`<div class="mt">${esc(A.progressText)} (${A.current}/${A.cvs.length})</div><div class="bar"><i style="width:${A.cvs.length?A.current/A.cvs.length*100:0}%"></i></div>`:''}</div>
+  ${A.results.length?`<div class="card"><div class="top"><b>Batch Results</b><span class="pill ok">สำเร็จ ${ok} · ไม่สำเร็จ ${failed}</span></div><p class="mt">ผลเรียงตามลำดับไฟล์ต้นฉบับ ไม่ได้จัดอันดับผู้สมัคร คะแนนเป็นตัวชี้วัดหลักฐานในเอกสารเท่านั้น</p><div class="row"><button class="btn s" data-ai-action="export">Export CSV</button></div></div>${A.results.map(aiResultCard).join('')}`:''}`;
+};
+
+function extName(name){const i=String(name||'').lastIndexOf('.');return i>=0?name.slice(i+1).toLowerCase():'';}
+function aiCsvCell(value){let s=String(value??'').replace(/[\r\n]+/g,' ');if(/^[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
+function aiExportCsv(){
+  const rows=[['Candidate','Source file','Evidence match score','Assessment coverage','Summary','Strengths','Missing information','Interview questions']];
+  AI_MATCH.results.forEach((x,i)=>{if(x.error){rows.push([`Candidate ${i+1}`,x.fileName,'','','ERROR: '+x.error,'','','']);return;}const s=x.scoring,r=x.result;rows.push([`Candidate ${String(i+1).padStart(2,'0')}`,x.fileName,s.score??'',s.coverage+'%',r.candidate_summary,(r.strengths||[]).join(' | '),(r.missing_information||[]).join(' | '),(r.interview_questions||[]).join(' | ')]);});
+  const csv='\uFEFF'+rows.map(r=>r.map(aiCsvCell).join(',')).join('\r\n');
+  save(new Blob([csv],{type:'text/csv;charset=utf-8'}),'AI_CV_Matcher_Results.csv');
+}
+
+async function aiRunBatch(){
+  const A=AI_MATCH;
+  if(A.running)return;
+  let criteria;
+  try{criteria=aiCriteria();}catch(e){return toast(e.message);}
+  if(!A.workerUrl.trim()||!/^https:\/\//i.test(A.workerUrl.trim()))return toast('กรุณากรอก Worker URL ที่เป็น HTTPS');
+  if(!A.accessCode)return toast('กรุณากรอก Shared Access Code');
+  if(!A.jdFile||!A.jdText)return toast('กรุณาเลือกและอ่านข้อความ JD ก่อน');
+  if(!A.cvs.length)return toast('กรุณาเลือก CV อย่างน้อย 1 ไฟล์');
+  if(A.cvs.length>15)return toast('รุ่นนี้รองรับไม่เกิน 15 CV ต่อ Batch');
+  if(!A.consent)return toast('กรุณายืนยันสิทธิ์และการอนุมัติให้ส่งข้อมูลไปยัง AI API');
+  A.running=true;A.results=[];A.current=0;A.progressText='เตรียมวิเคราะห์';R();
+  try{
+    for(let i=0;i<A.cvs.length;i++){
+      const file=A.cvs[i];A.current=i+1;A.progressText='กำลังอ่านข้อความและวิเคราะห์ Candidate '+String(i+1).padStart(2,'0');R();
+      try{
+        const raw=await aiReadDocument(file,'cv');
+        const cvText=A.anonymize?aiMaskIdentifiers(raw):raw;
+        const response=await fetch(A.workerUrl.trim().replace(/\/+$/,'')+'/analyze',{
+          method:'POST',headers:{'content-type':'application/json','X-HR-HUB-ACCESS':A.accessCode},
+          body:JSON.stringify({candidateId:'Candidate '+String(i+1).padStart(2,'0'),jdText:A.jdText,cvText,criteria})
+        });
+        let payload={};try{payload=await response.json();}catch(_){}
+        if(!response.ok)throw Error(payload.error||('Backend error '+response.status));
+        const result=payload.result;
+        if(!result||!Array.isArray(result.criteria_assessment))throw Error('ผลลัพธ์ AI ไม่อยู่ในรูปแบบที่รองรับ');
+        A.results.push({fileName:file.name,result,scoring:aiScore(result,criteria),model:payload.model||''});
+      }catch(err){A.results.push({fileName:file.name,error:err.message||'เกิดข้อผิดพลาด'});}
+      A.current=i+1;R();
+    }
+  }finally{A.running=false;A.progressText='เสร็จสิ้น';R();}
+}
+
+document.addEventListener('change',async e=>{
+  const t=e.target;
+  if(t.dataset.aiFile){const kind=t.dataset.aiFile,files=[...t.files];t.value='';if(!files.length)return;
+    if(kind==='jd'){
+      const f=files[0];if(!['pdf','docx'].includes(extName(f.name)))return toast('รองรับ JD PDF และ DOCX');
+      AI_MATCH.jdFile=f;AI_MATCH.jdText='';AI_MATCH.results=[];R();
+      try{AI_MATCH.jdText=await aiReadDocument(f,'jd');toast('อ่านข้อความ JD สำเร็จ');}catch(err){AI_MATCH.jdFile=null;toast(err.message||'อ่าน JD ไม่สำเร็จ');}
+      R();
+    }else{
+      const valid=files.filter(f=>['pdf','docx'].includes(extName(f.name))&&f.size<=8*1048576);
+      const invalid=files.length-valid.length;
+      const existing=AI_MATCH.cvs;
+      const merged=[...existing,...valid];
+      const seen=new Set();AI_MATCH.cvs=merged.filter(f=>{const k=f.name+'|'+f.size+'|'+f.lastModified;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,15);
+      AI_MATCH.results=[];if(invalid)toast('ข้าม '+invalid+' ไฟล์ (ชนิดไม่รองรับหรือเกิน 8 MB)');if(merged.length>15)toast('เพิ่มได้สูงสุด 15 CV');R();
+    }
+  }
+});
+document.addEventListener('input',e=>{
+  const k=e.target.dataset.aiField;if(!k)return;
+  if(k==='workerUrl'||k==='accessCode'||k==='criteriaText')AI_MATCH[k]=e.target.value;
+});
+document.addEventListener('change',e=>{
+  const k=e.target.dataset.aiField;if(!k)return;
+  if(k==='anonymize'||k==='consent')AI_MATCH[k]=e.target.checked;
+});
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-ai-action]');if(!t)return;
+  const a=t.dataset.aiAction;
+  if(a==='run')aiRunBatch();
+  else if(a==='clear'){if(AI_MATCH.running)return;AI_MATCH.results=[];AI_MATCH.current=0;AI_MATCH.progressText='';R();}
+  else if(a==='export')aiExportCsv();
+  else if(a==='remove-cv'){if(AI_MATCH.running)return;AI_MATCH.cvs.splice(Number(t.dataset.aiIndex),1);AI_MATCH.results=[];R();}
+});
+
 R();
 </script>
 </body>
