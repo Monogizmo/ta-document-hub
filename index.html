@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>HR Document Hub</title>
+<title>HR Document Hub — Local Document Processing</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f6f4f2;--cd:#fff;--tx:#595959;--bd:#e5e0dd;--br:#6F5F5E;--y:#FFD400;--yt:#3a3231;--ok:#15803d;--okb:#dcfce7;--wn:#a16207;--wnb:#fef3c7;--er:#b91c1c;--erb:#fee2e2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -59,6 +59,40 @@ h1{font-size:30px}.hero{padding:4px 0 12px}.h1x{font-size:40px;margin:6px 0}
 .task{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:18px;text-align:left;font:inherit;color:var(--tx);cursor:pointer;display:flex;flex-direction:column;gap:6px}.task:hover{border-color:var(--y);box-shadow:0 0 0 2px var(--y)}
 .task i{width:46px;height:46px;border-radius:12px;background:var(--y);color:var(--yt);display:flex;align-items:center;justify-content:center;margin-bottom:6px}.task b{color:var(--br);font-size:16px}.task span{font-size:13px}
 </style>
+
+<style>
+.toolbox{position:relative;min-width:0}.toolbox .tool{height:100%;width:100%;padding-right:42px}
+.fav-toggle{position:absolute;right:10px;top:10px;border:1px solid var(--bd);background:var(--bg);color:var(--br);border-radius:8px;min-width:30px;height:30px;font-size:18px;cursor:pointer;z-index:2}
+.fav-toggle.on{background:var(--y);border-color:var(--y);color:#3a3231}
+.formfield{background:rgba(255,212,0,.16);border:2px dashed #8a7100;color:#3a3231;font-size:12px;padding:2px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center}
+.formfield .x{top:-8px;right:-8px}
+.it.hl{background:rgba(255,212,0,.35);border:2px solid #b38f00}
+@media(max-width:820px){.fav-toggle{right:8px;top:8px}}
+</style>
+
+
+<style>
+.tool-help{background:var(--cd);border:1px solid var(--bd);border-left:5px solid var(--y);border-radius:12px;padding:14px 16px;margin:12px 0 18px}
+.tool-help .help-title{font-weight:700;color:var(--br);margin-bottom:4px}
+.tool-help .help-purpose{margin:0 0 8px}
+.tool-help ol{margin:6px 0 8px;padding-left:22px}
+.tool-help li{margin:3px 0}
+.tool-help .help-limit{font-size:13px;background:var(--wnb);color:var(--wn);padding:8px 10px;border-radius:8px;margin-top:8px}
+.scanner-video-wrap{background:#171717;border-radius:14px;overflow:hidden;min-height:180px;display:flex;align-items:center;justify-content:center}
+#scannerVideo{width:100%;max-height:62vh;object-fit:contain;background:#171717}
+#scannerVideo[hidden]{display:none}
+.scanner-preview{width:100%;max-height:62vh;object-fit:contain;background:#222;border-radius:10px}
+.scan-thumb{width:78px;height:94px;object-fit:cover;border:1px solid var(--bd);border-radius:8px;background:#eee}
+.scan-page{display:flex;gap:10px;align-items:center;padding:9px;border:1px solid var(--bd);border-radius:10px;margin:7px 0;background:var(--cd)}
+.scan-page.selected{border:2px solid var(--y);background:var(--bg)}
+.scan-page .meta{flex:1;min-width:0}
+.scan-page .meta b{display:block;overflow-wrap:anywhere}
+.scan-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.scan-controls label{display:flex;flex-direction:column;align-items:flex-start;gap:4px;font-size:13px}
+.scan-controls input,.scan-controls select{width:100%}
+@media(max-width:820px){.tool-help{padding:12px}.scan-page{align-items:flex-start}.scan-thumb{width:64px;height:82px}}
+</style>
+
 </head>
 <body>
 <div class="app"><aside><div class="logo"><i></i>HR Document Hub</div><input id="q" type="search" placeholder="Search tools or document tasks..." aria-label="ค้นหาเครื่องมือ"><div id="sres"></div><nav class="nav" id="nav"></nav></aside><main id="main"></main></div>
@@ -72,6 +106,7 @@ h1{font-size:30px}.hero{padding:4px 0 12px}.h1x{font-size:40px;margin:6px 0}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const mb=b=>(b/1048576).toFixed(2)+' MB',ext=n=>n.includes('.')?n.split('.').pop().toLowerCase():'',stem=n=>n.includes('.')?n.slice(0,n.lastIndexOf('.')):n;
+const extName=n=>String(n||'').includes('.')?String(n).split('.').pop().toLowerCase():'';
 const em=x=>x&&x.name==='PasswordException'?'PDF มีรหัสผ่าน (Phase 1 ยังไม่รองรับการปลดล็อก)':'เปิดไฟล์ไม่ได้ ไฟล์อาจเสียหาย';
 function save(b,n){if(/pdf/.test(b.type||''))LAST={file:new File([b],n,{type:'application/pdf'})};const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000);toast('ดาวน์โหลดแล้ว: '+n)}
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',3200)}
@@ -123,18 +158,18 @@ const mv=(a,i,d)=>{const j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]
 const privacy='ไฟล์ถูกประมวลผลบนเครื่องนี้ ไม่มีการอัปโหลดเอกสารไปยังบริการภายนอก';
 
 /* ---------- views ---------- */
-function card(id){const t=T[id];return`<button class="tool" data-go="${id}"><b>${t.n}${t.p?`<span class="tag">Phase ${t.p}</span>`:''}</b><span>${t.d}</span></button>`}
+function card(id){const t=T[id],fav=typeof HRDH_FAVS!=='undefined'&&HRDH_FAVS.has(id);return`<div class="toolbox"><button class="tool" data-go="${id}"><b>${t.n}${t.p?`<span class="tag">Phase ${t.p}</span>`:''}</b><span>${t.d}</span></button><button class="fav-toggle ${fav?'on':''}" data-fav-toggle="${id}" title="เพิ่ม/นำออกจากรายการโปรด" aria-label="เพิ่มหรือนำออกจากรายการโปรด">${fav?'★':'☆'}</button></div>`}
 const V={
 home(){const q=['merge','compress','word2pdf','checker','img2pdf','jd','sign','offer'];
-return`<span class="badge">Local PDF Processing | Optional AI Analysis</span><h1>HR Document Hub</h1><p class="sub">พื้นที่ทำงานสำหรับเตรียมเอกสาร จัดการ PDF และงานเอกสารสรรหาบุคลากร</p>
+return`<span class="badge">Local Document Processing | No AI API</span><h1>HR Document Hub</h1><p class="sub">พื้นที่ทำงานสำหรับเตรียมเอกสาร จัดการ PDF และงานเอกสารสรรหาบุคลากร</p>
 <h2>ทางลัด</h2><div class="grid">${q.map(card).join('')}</div>
 ${Object.entries(CAT).map(([c,n])=>`<h2>${n}</h2><div class="grid">${Object.keys(T).filter(k=>T[k].c===c).map(card).join('')}</div>`).join('')}
 <p class="mt">เครื่องมือที่มีป้าย Phase ยังไม่พร้อมใช้งาน ระบบจะแจ้งสถานะจริงเมื่อเปิดหน้านั้น</p>`},
 cat(){return`<h1>${CAT[arg]}</h1><p class="sub">เลือกเครื่องมือ</p><div class="grid">${Object.keys(T).filter(k=>T[k].c===arg).map(card).join('')}</div>`},
 planned(){const t=T[arg];return`<h1>${t.n}</h1><div class="card"><span class="pill wn">ยังไม่พร้อมใช้งาน · วางแผนไว้ใน Phase ${t.p}</span><p>${t.d}</p><p class="mt">ฟังก์ชันนี้ยังไม่ถูกพัฒนา จึงไม่มีปุ่มที่ใช้งานได้ ระหว่างนี้ใช้เครื่องมือ Phase 1 ในแถบซ้ายแทนได้</p><button class="btn s" data-go="home">กลับหน้าแรก</button></div>`},
 settings(){return`<h1>Settings & Privacy</h1>
-<div class="card"><b>ธีม</b><div class="row"><select id="theme"><option value="">ตามระบบ</option><option value="light">สว่าง</option><option value="dark">มืด</option></select></div><p class="mt">การตั้งค่าเลือกภาษา, ชื่อไฟล์ตั้งต้น และค่าอื่นๆ จะเพิ่มใน Phase ถัดไป หน้านี้ไม่บันทึกค่าใดๆ ไว้ในเบราว์เซอร์</p></div>
-<div class="card"><b>ความเป็นส่วนตัว</b><p>${privacy}</p><ul class="mt"><li>ไม่ต้องล็อกอิน ไม่มีฐานข้อมูล ไม่เก็บไฟล์ถาวร</li><li>เครื่องมือ PDF ทั่วไปประมวลผลใน Browser; หากใช้ AI CV Matcher ระบบจะส่งเฉพาะข้อความที่ดึงจากเอกสารไปยัง Backend และ OpenAI API หลังผู้ใช้ยืนยัน</li><li>ข้อมูลหายเมื่อรีเฟรชหรือปิดหน้านี้</li><li>หน้าเว็บนี้ดึงไลบรารีประมวลผล (pdf.js, pdf-lib, jsPDF, JSZip) และฟอนต์จาก cdnjs/Google Fonts เมื่อเปิดหน้า ซึ่งไม่ใช่ข้อมูลเอกสารของคุณ หากต้องการปิดการเชื่อมต่อภายนอกทั้งหมด ให้นำไลบรารีไปโฮสต์เองในเครื่องมือภายในองค์กร</li><li>ความปลอดภัยยังขึ้นกับอุปกรณ์และส่วนขยายเบราว์เซอร์ของคุณ</li></ul></div>`}
+<div class="card"><b>ธีม</b><div class="row"><select id="theme"><option value="">ตามระบบ</option><option value="light">สว่าง</option><option value="dark">มืด</option></select></div><p class="mt">ธีมที่เลือกจะบันทึกเป็นค่าตั้งค่าใน Browser นี้เท่านั้น ส่วนไฟล์เอกสารและผลวิเคราะห์ไม่ถูกบันทึกถาวร</p></div>
+<div class="card"><b>ความเป็นส่วนตัว</b><p>${privacy}</p><ul class="mt"><li>ไม่ต้องล็อกอิน ไม่มีฐานข้อมูล ไม่เก็บไฟล์ถาวร</li><li>AI CV Matcher รุ่นนี้เป็น Local Matching แบบใช้กฎและคำสำคัญ ไม่เรียก AI API และไม่ส่งข้อความ JD/CV ออกนอก Browser</li><li>OCR ใช้ Tesseract.js ประมวลผลใน Browser แต่จะดาวน์โหลดไลบรารีและโมเดลภาษาเมื่อเริ่มใช้งานครั้งแรก หากต้องการ Offline เต็มรูปแบบต้องโฮสต์ไฟล์เหล่านี้ภายในองค์กร</li><li>ข้อมูลหายเมื่อรีเฟรชหรือปิดหน้านี้</li><li>หน้าเว็บนี้ดึงไลบรารีประมวลผล (pdf.js, pdf-lib, jsPDF, JSZip) และฟอนต์จาก cdnjs/Google Fonts เมื่อเปิดหน้า ซึ่งไม่ใช่ข้อมูลเอกสารของคุณ หากต้องการปิดการเชื่อมต่อภายนอกทั้งหมด ให้นำไลบรารีไปโฮสต์เองในเครื่องมือภายในองค์กร</li><li>ความปลอดภัยยังขึ้นกับอุปกรณ์และส่วนขยายเบราว์เซอร์ของคุณ</li></ul></div>`}
 };
 
 /* ---------- Checker ---------- */
@@ -643,7 +678,7 @@ document.addEventListener('pointerup',()=>{if(DR&&DR.k!=='sp')R();DR=null});
 new MutationObserver(()=>{if(cur!=='sign'&&cur!=='redact')return;const C=S[cur];if(C.file&&VW.tool!==cur){if(!VW.opening){VW.opening=1;vwOpen(C.file,cur).then(()=>{VW.opening=0;R()}).catch(()=>{VW.opening=0})}}else if(VW.tool===cur&&$('#vc'))vwRender()}).observe($('#main'),{childList:true});
 const stl2=document.createElement('style');stl2.textContent=`.it{position:absolute;border:1px dashed var(--br);touch-action:none;cursor:move;box-sizing:border-box}.it.rect{background:rgba(0,0,0,.8);border:2px solid #c00}.it .x{position:absolute;top:-12px;right:-12px;width:24px;height:24px;border-radius:50%;background:#b91c1c;color:#fff;text-align:center;line-height:22px;cursor:pointer;font-size:16px}.it .rs{position:absolute;right:-8px;bottom:-8px;width:16px;height:16px;background:var(--y);border:2px solid var(--br);border-radius:4px;cursor:nwse-resize}`;document.head.appendChild(stl2);
 TASKS.splice(0,TASKS.length,['unlock','Unlock PDF','ใส่รหัสของไฟล์เพื่อปลดล็อก',IC(`<rect x='4' y='11' width='16' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 7-2.6'/>`)],['merge','Merge PDF','รวมหลายไฟล์เป็นไฟล์เดียว จัดลำดับได้',IC(`<path d='M6 3v6a6 6 0 0 0 6 6h6M18 12l3 3-3 3M6 21v-3'/>`)],['protect','Protect PDF','ตั้งรหัสผ่านเปิดไฟล์',IC(`<rect x='4' y='11' width='16' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/>`)],['checker','PDF Checker','ตรวจชื่อ ขนาด โครงสร้าง แล้วแก้ในครั้งเดียว',IC(`<rect x='4' y='3' width='16' height='18' rx='2'/><path d='M9 12l2 2 4-4'/>`)],['jd','สร้าง JD','กรอกฟอร์มแล้วได้ PDF ส่งผู้สมัคร',IC(`<path d='M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z'/><path d='M14 3v5h5M9 13h6M9 17h6'/>`)]);
-V.home=()=>`<section class='hero'><span class='badge'>Local PDF Processing | Optional AI Analysis</span><h1 class='h1x'>HR Document Hub</h1><p class='sub'>พื้นที่ทำงานสำหรับเตรียมเอกสาร จัดการ PDF และงานเอกสารสรรหาบุคลากร</p></section><label class='drop big' data-tool='smart'><b>ลากไฟล์มาวางที่นี่ หรือแตะเพื่อเลือก</b><span>ระบบจะแนะนำเครื่องมือที่เหมาะกับไฟล์ของคุณ · ${privacy}</span><input type='file' multiple data-tool='smart'></label>${HOME.files.length?`<div class='card'><b>${HOME.files.length} ไฟล์:</b> ${esc(HOME.files.slice(0,5).map(f=>f.name).join(', '))}${HOME.files.length>5?' ...':''}<div class='row'>${sg().map(([t,l])=>`<button class='btn' data-sg='${t}'>${l}</button>`).join('')}</div></div>`:''}<h2>งานที่ทำบ่อย</h2><div class='grid'>${TASKS.map(([id,n,d,ic])=>`<button class='task' data-go='${id}'><i>${ic}</i><b>${n}</b><span>${d}</span></button>`).join('')}</div><p class='mt'>เครื่องมือทั้งหมดอยู่ที่เมนูด้านซ้าย</p>`;
+V.home=()=>`<section class='hero'><span class='badge'>Local Document Processing | No AI API</span><h1 class='h1x'>HR Document Hub</h1><p class='sub'>พื้นที่ทำงานสำหรับเตรียมเอกสาร จัดการ PDF และงานเอกสารสรรหาบุคลากร</p></section><label class='drop big' data-tool='smart'><b>ลากไฟล์มาวางที่นี่ หรือแตะเพื่อเลือก</b><span>ระบบจะแนะนำเครื่องมือที่เหมาะกับไฟล์ของคุณ · ${privacy}</span><input type='file' multiple data-tool='smart'></label>${HOME.files.length?`<div class='card'><b>${HOME.files.length} ไฟล์:</b> ${esc(HOME.files.slice(0,5).map(f=>f.name).join(', '))}${HOME.files.length>5?' ...':''}<div class='row'>${sg().map(([t,l])=>`<button class='btn' data-sg='${t}'>${l}</button>`).join('')}</div></div>`:''}<h2>งานที่ทำบ่อย</h2><div class='grid'>${TASKS.map(([id,n,d,ic])=>`<button class='task' data-go='${id}'><i>${ic}</i><b>${n}</b><span>${d}</span></button>`).join('')}</div><p class='mt'>เครื่องมือทั้งหมดอยู่ที่เมนูด้านซ้าย</p>`;
 V.cat=()=>`<h1>${CAT[arg]}</h1><p class='sub'>เลือกเครื่องมือ</p><div class='grid'>${Object.keys(T).filter(k=>T[k].c===arg&&!T[k].p).map(card).join('')||"<p class='mt'>ยังไม่มีเครื่องมือที่พร้อมใช้ในหมวดนี้ ดูที่แผนงาน</p>"}</div>`;
 V.roadmap=()=>`<h1>แผนงาน</h1><p class='sub'>ฟังก์ชันที่ยังไม่พร้อมใช้งาน</p>${[4,5].map(p=>`<h2>Phase ${p}</h2><div class='grid'>${Object.keys(T).filter(k=>T[k].p===p).map(card).join('')}</div>`).join('')}`;
 NAV.splice(NAV.length-1,0,['roadmap','แผนงาน']);
@@ -652,190 +687,465 @@ new MutationObserver(()=>{if(!LAST||!LASTT.includes(cur)||$('#last'))return;cons
 document.addEventListener('click',e=>{const t=e.target.closest('[data-use],[data-lastclr],[data-sg]');if(!t)return;if(t.dataset.use)ADD[cur]([LAST.file]);else if(t.dataset.lastclr){LAST=null;const l=$('#last');l&&l.remove()}else{const k=t.dataset.sg,fs=HOME.files;go(k);ADD[k](fs)}});
 V.pack=()=>{if(S.merge.name==='merged.pdf')S.merge.name='Candidate_Document_Pack.pdf';return V.merge().replace('Merge PDF</h1>',`Candidate Document Pack</h1><div class='note'>ตรวจรายการก่อนรวมทุกครั้ง ระบบไม่เลือกเอกสารภายในออกให้อัตโนมัติ</div>`)};
 
-/* ===== AI CV Matcher: batch evidence analysis ===== */
-const AI_MATCH = {
-  workerUrl: '', accessCode: '', jdFile: null, jdText: '',
-  cvs: [], results: [], criteriaText: 'ทักษะที่จำเป็น | 35\nประสบการณ์ที่เกี่ยวข้อง | 30\nคุณสมบัติที่กำหนด | 25\nทักษะเพิ่มเติม | 10',
-  anonymize: true, consent: false, running: false, current: 0, progressText: ''
-};
-T.aiMatcher={n:'AI CV Matcher',d:'วิเคราะห์ JD เทียบกับ CV หลายคน พร้อมหลักฐาน จุดแข็ง และคำถามสัมภาษณ์',c:'hr',p:0};
-NAV.splice(NAV.length-1,0,['ai-matcher','AI CV Matcher']);
+/* ===== Local Document Processing Extensions (Phase 4 & 5) ===== */
 
-function aiCriteria(){
-  const rows=AI_MATCH.criteriaText.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-  const out=[];
-  for(const row of rows){
-    const m=row.match(/^(.*?)\s*[|,:：]\s*(\d+(?:\.\d+)?)\s*%?$/);
-    if(!m)throw Error('รูปแบบเกณฑ์ไม่ถูกต้อง ใช้รูปแบบ ชื่อเกณฑ์ | น้ำหนัก');
-    const name=m[1].trim(),weight=Number(m[2]);
-    if(!name||name.length>120||!Number.isFinite(weight)||weight<=0||weight>100)throw Error('ชื่อเกณฑ์หรือน้ำหนักไม่ถูกต้อง');
-    if(out.some(x=>x.name.toLowerCase()===name.toLowerCase()))throw Error('ชื่อเกณฑ์ต้องไม่ซ้ำกัน');
-    out.push({name,weight});
+// Persist only user preferences. Uploaded documents and analysis results remain in memory.
+const HRDH_FAV_KEY = 'hrdh:favorites:v1';
+const HRDH_THEME_KEY = 'hrdh:theme:v1';
+let HRDH_FAVS = new Set();
+try { HRDH_FAVS = new Set(JSON.parse(localStorage.getItem(HRDH_FAV_KEY) || '[]')); } catch (_) {}
+try { const savedTheme = localStorage.getItem(HRDH_THEME_KEY); if (savedTheme) document.documentElement.dataset.theme = savedTheme; } catch (_) {}
+
+document.addEventListener('change', e => {
+  if (e.target && e.target.id === 'theme') {
+    try { if (e.target.value) localStorage.setItem(HRDH_THEME_KEY, e.target.value); else localStorage.removeItem(HRDH_THEME_KEY); } catch (_) {}
   }
-  if(out.length<1||out.length>10)throw Error('กำหนดเกณฑ์ได้ 1–10 ข้อ');
+});
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-fav-toggle]');
+  if (!b) return;
+  const id = b.dataset.favToggle;
+  if (HRDH_FAVS.has(id)) HRDH_FAVS.delete(id); else HRDH_FAVS.add(id);
+  try { localStorage.setItem(HRDH_FAV_KEY, JSON.stringify([...HRDH_FAVS])); } catch (_) {}
+  R();
+});
+
+// Correct tool statuses: implemented tools are available; features requiring a full Office engine remain planned.
+Object.assign(T, {
+  aiMatcher: {n:'AI CV Matcher (Local)', d:'จับคู่คำสำคัญจาก JD และ CV หลายคนใน Browser · ยังไม่เชื่อม AI Model', c:'hr', p:0},
+  forms: {n:'Prepare a Form', d:'เพิ่มช่องกรอกข้อความ Checkbox และ Dropdown ลงใน PDF', c:'sign', p:0},
+  ocr: {n:'OCR PDF to Text', d:'อ่านข้อความจาก PDF สแกนด้วย OCR บน Browser แล้วส่งออกเป็น TXT', c:'conv', p:0},
+  edit: {n:'Edit PDF (Overlay)', d:'วางข้อความ รูปภาพ และไฮไลต์ลงบน PDF', c:'pdf', p:0},
+  pdf2word: {n:'PDF to DOCX (Text Only)', d:'ดึงข้อความจาก PDF แล้วส่งออกเป็น Word · ไม่รักษา Layout', c:'conv', p:0},
+  html2pdf: {n:'HTML to PDF (Print)', d:'เปิดเอกสาร HTML ที่ผ่านการกรอง แล้วใช้ Print / Save as PDF', c:'conv', p:0},
+  word2pdf: {n:'Word to PDF', d:'รอ Office/LibreOffice Engine ภายในเครื่องเพื่อรักษา Layout', c:'conv', p:5},
+  office2pdf: {n:'Excel / PowerPoint to PDF', d:'รอ Office/LibreOffice Engine ภายในเครื่องเพื่อรักษา Layout', c:'conv', p:5}
+});
+T.sign.p = 0; T.fill.p = 0; T.redact.p = 0; T.compare.p = 0;
+T.protect.p = 0; T.unlock.p = 0; T.repair.p = 0; T.pdf2img.p = 0;
+
+// AI CV Matcher is intentionally local and rule-based until an organization-approved AI API is connected.
+const AI_MATCH = {
+  jdFile:null, jdText:'', cvs:[], results:[], running:false, current:0, progressText:'',
+  criteriaText:'ทักษะที่จำเป็น | 35 | excel, powerpoint, stakeholder management, project management\nประสบการณ์ที่เกี่ยวข้อง | 30 | recruitment, talent acquisition, sourcing, screening, interview\nคุณสมบัติที่กำหนด | 25 | bachelor, ปริญญาตรี, degree, qualification\nทักษะเพิ่มเติม | 10 | analytics, reporting, data analysis'
+};
+
+function localNormalize(s){ return String(s||'').toLowerCase().normalize('NFKC').replace(/[\u200b-\u200f\ufeff]/g,'').replace(/\s+/g,' ').trim(); }
+function localContains(text, term){
+  const t=localNormalize(term), h=localNormalize(text);
+  if(!t) return false;
+  if(/^[a-z0-9][a-z0-9 +.#/-]*$/i.test(t)){
+    const escaped=t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s+');
+    return new RegExp('(^|[^a-z0-9])'+escaped+'($|[^a-z0-9])','i').test(h);
+  }
+  return h.includes(t);
+}
+function localCriteria(){
+  const rows=AI_MATCH.criteriaText.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),out=[];
+  for(const row of rows){
+    const parts=row.split('|').map(x=>x.trim());
+    if(parts.length<3) throw Error('รูปแบบเกณฑ์ไม่ถูกต้อง ใช้ ชื่อเกณฑ์ | น้ำหนัก | คำค้น/คำพ้อง');
+    const [name,w,termsRaw]=parts,weight=Number(w),terms=[...new Set(termsRaw.split(/[,;；、]/).map(x=>x.trim()).filter(Boolean))];
+    if(!name||name.length>100||!Number.isFinite(weight)||weight<=0||weight>100||!terms.length) throw Error('ชื่อเกณฑ์ น้ำหนัก หรือคำค้นไม่ถูกต้อง: '+name);
+    if(out.some(x=>x.name.toLowerCase()===name.toLowerCase())) throw Error('ชื่อเกณฑ์ต้องไม่ซ้ำกัน: '+name);
+    out.push({name,weight,terms});
+  }
+  if(!out.length||out.length>10) throw Error('กำหนดเกณฑ์ได้ 1–10 ข้อ');
   const total=out.reduce((a,x)=>a+x.weight,0);
-  if(Math.abs(total-100)>0.001)throw Error('น้ำหนักเกณฑ์รวมต้องเท่ากับ 100% (ปัจจุบัน '+total+'%)');
+  if(Math.abs(total-100)>0.001) throw Error('น้ำหนักเกณฑ์รวมต้องเท่ากับ 100% (ปัจจุบัน '+total+'%)');
   return out;
 }
-
-function aiMaskIdentifiers(text){
-  // Best-effort pattern masking only. Users must still review the document before sending.
-  return String(text||'')
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[EMAIL REDACTED]')
-    .replace(/\b(?:\+?66[- .]?)?(?:0?\d[- .]?){8,10}\b/g,'[PHONE REDACTED]')
-    .replace(/\b\d{13}\b/g,'[ID NUMBER REDACTED]')
-    .replace(/^(\s*(?:ชื่อ(?:-นามสกุล)?|name|candidate name|applicant name|วันเกิด|date of birth|อายุ|age|เพศ|gender|ที่อยู่|address|marital status|สถานภาพสมรส)\s*[:：]).*$/gim,'$1 [REDACTED]');
-}
-
-async function aiReadDocument(file, kind){
+async function localReadDocument(file,kind){
   const ext=extName(file.name);
-  if(!['pdf','docx'].includes(ext))throw Error('รองรับเฉพาะ PDF และ DOCX ในรุ่นนี้');
-  if(file.size===0)throw Error('ไฟล์ว่าง');
-  if(file.size>(kind==='jd'?10:8)*1048576)throw Error('ไฟล์ใหญ่เกินกำหนด ('+(kind==='jd'?'10':'8')+' MB)');
+  if(!['pdf','docx','txt'].includes(ext)) throw Error('รองรับ PDF, DOCX และ TXT');
+  if(!file.size) throw Error('ไฟล์ว่าง');
+  const max=(kind==='jd'?10:8)*1048576;
+  if(file.size>max) throw Error('ไฟล์ใหญ่เกิน '+(kind==='jd'?10:8)+' MB');
   let text='';
   if(ext==='pdf'){
     const doc=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
-    if(doc.numPages>30){doc.destroy();throw Error('PDF มีมากกว่า 30 หน้า กรุณาเลือกไฟล์/ช่วงเอกสารที่เกี่ยวข้อง');}
+    if(doc.numPages>40){doc.destroy();throw Error('PDF มากกว่า 40 หน้า กรุณาแยกไฟล์ก่อน');}
     const pages=[];
-    for(let i=1;i<=doc.numPages;i++){
-      const page=await doc.getPage(i),content=await page.getTextContent();
+    for(let n=1;n<=doc.numPages;n++){
+      const page=await doc.getPage(n),content=await page.getTextContent();
       pages.push(content.items.map(x=>x.str||'').filter(Boolean).join(' '));
     }
-    doc.destroy();text=pages.join('\n');
-  }else{
+    doc.destroy(); text=pages.join('\n');
+  } else if(ext==='docx'){
     const zip=await JSZip.loadAsync(file),xmlFile=zip.file('word/document.xml');
-    if(!xmlFile)throw Error('ไม่พบเนื้อหา Word ในไฟล์ DOCX');
+    if(!xmlFile) throw Error('ไม่พบเนื้อหา Word ในไฟล์ DOCX');
     const xml=await xmlFile.async('string'),parsed=new DOMParser().parseFromString(xml,'application/xml');
-    if(parsed.querySelector('parsererror'))throw Error('อ่านโครงสร้าง DOCX ไม่สำเร็จ');
+    if(parsed.querySelector('parsererror')) throw Error('อ่านโครงสร้าง DOCX ไม่สำเร็จ');
     const ns='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
-    const paragraphs=Array.from(parsed.getElementsByTagNameNS(ns,'p'));
-    text=paragraphs.map(p=>Array.from(p.getElementsByTagNameNS(ns,'t')).map(t=>t.textContent||'').join('')).join('\n');
-  }
+    text=Array.from(parsed.getElementsByTagNameNS(ns,'p')).map(p=>Array.from(p.getElementsByTagNameNS(ns,'t')).map(t=>t.textContent||'').join('')).join('\n');
+  } else text=await file.text();
   text=String(text||'').replace(/\u0000/g,' ').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
-  if(text.length<80)throw Error('อ่าน Text จากเอกสารได้น้อยมาก อาจเป็น PDF สแกน/ภาพ (รุ่นนี้ยังไม่มี OCR)');
-  const max=kind==='jd'?25000:45000;
-  if(text.length>max)throw Error('ข้อความยาวเกิน '+max.toLocaleString()+' ตัวอักษร กรุณาย่อเอกสารให้เหลือเฉพาะส่วนที่เกี่ยวข้อง');
+  if(text.length<30) throw Error('อ่านข้อความได้น้อยมาก อาจเป็น PDF สแกน ให้ใช้ OCR PDF to Text ก่อน');
+  const maxChars=kind==='jd'?30000:50000;
+  if(text.length>maxChars) throw Error('ข้อความยาวเกิน '+maxChars.toLocaleString()+' ตัวอักษร กรุณาเลือกเอกสารที่สั้นลง');
   return text;
 }
-
-function aiScore(result,criteria){
-  const normalized=s=>String(s||'').trim().toLowerCase();
-  let earned=0,assessable=0,unknown=0;
-  const items=criteria.map(c=>{
-    const found=(result.criteria_assessment||[]).find(x=>normalized(x.criterion)===normalized(c.name));
-    const item=found||{criterion:c.name,status:'unclear',evidence:'',cv_excerpt:'',explanation:'AI ไม่ได้ส่งผลประเมินสำหรับเกณฑ์นี้',verification_question:'กรุณาตรวจสอบด้วยตนเอง'};
-    if(item.status==='unclear')unknown+=c.weight;
-    else{
-      assessable+=c.weight;
-      earned+=c.weight*(item.status==='evidenced'?1:item.status==='partial'?.5:0);
-    }
-    return {...item,criterion:c.name,weight:c.weight};
+function localEvidenceExcerpt(text,term){
+  const raw=String(text||''),needle=String(term||'');
+  let idx=raw.toLowerCase().indexOf(needle.toLowerCase());
+  if(idx<0){const normalized=localNormalize(raw),t=localNormalize(needle);idx=normalized.indexOf(t);if(idx<0)return '';return normalized.slice(Math.max(0,idx-100),Math.min(normalized.length,idx+t.length+180)).trim();}
+  const start=Math.max(0,idx-100),end=Math.min(raw.length,idx+needle.length+180);
+  return raw.slice(start,end).replace(/\s+/g,' ').trim();
+}
+function localMatchOne(fileName,text,criteria,index){
+  const rows=criteria.map(c=>{
+    const matched=c.terms.filter(term=>localContains(text,term));
+    const ratio=matched.length/c.terms.length;
+    const status=ratio>=0.6?'evidenced':ratio>0?'partial':'not_stated';
+    const excerpt=matched.length?localEvidenceExcerpt(text,matched[0]):'';
+    return {...c,matched,status,ratio,excerpt};
   });
-  return {score:assessable?Math.round(earned/assessable*100):null,coverage:Math.round(assessable),unknownWeight:Math.round(unknown),items};
+  const score=Math.round(rows.reduce((sum,r)=>sum+r.weight*r.ratio,0));
+  const allTerms=criteria.flatMap(c=>c.terms),hits=allTerms.filter(t=>localContains(text,t));
+  const summaries=rows.filter(r=>r.matched.length).slice(0,3).map(r=>r.name+': '+r.matched.join(', '));
+  const summary='Local keyword scan พบคำค้นที่ตรงกัน '+hits.length+' จาก '+allTerms.length+' คำ ('+rows.length+' เกณฑ์)'+(summaries.length?' โดยพบหลักฐานที่เกี่ยวข้องกับ '+summaries.join(' · '):' ยังไม่พบคำค้นที่กำหนดในเอกสาร');
+  const strengths=rows.filter(r=>r.status==='evidenced').map(r=>r.name+' — พบคำ/วลี: '+r.matched.join(', '));
+  const partial=rows.filter(r=>r.status==='partial').map(r=>r.name+' — พบเพียงบางคำ: '+r.matched.join(', '));
+  const missing=rows.filter(r=>r.status==='not_stated').map(r=>r.name+' — ไม่พบคำค้นที่กำหนดใน CV (ไม่ได้แปลว่าผู้สมัครไม่มีทักษะนี้)');
+  const questions=rows.filter(r=>r.status!=='evidenced').map(r=>r.status==='partial'?'ช่วยอธิบายเพิ่มเติมเกี่ยวกับ '+r.name+' และยกตัวอย่างผลงานที่เกี่ยวข้องได้หรือไม่?':'ช่วยเล่าประสบการณ์หรือหลักฐานที่เกี่ยวข้องกับ '+r.name+' เพิ่มเติมได้หรือไม่?');
+  return {fileName,candidate:'Candidate '+String(index+1).padStart(2,'0'),score,coverage:100,summary,rows,strengths,partial,missing,questions,method:'Rule-based keyword matching'};
 }
-
-function aiStatusLabel(status){return ({evidenced:'พบหลักฐาน',partial:'พบหลักฐานบางส่วน',not_stated:'ไม่พบใน CV',unclear:'ต้องตรวจสอบ'})[status]||'ต้องตรวจสอบ';}
-function aiResultCard(item,index){
-  if(item.error)return `<div class="card"><div class="top"><b>Candidate ${String(index+1).padStart(2,'0')} · ${esc(item.fileName)}</b><span class="pill er">วิเคราะห์ไม่สำเร็จ</span></div><p class="mt">${esc(item.error)}</p></div>`;
-  const r=item.result,s=item.scoring;
-  return `<div class="card" style="margin-top:12px"><div class="top"><div><b>Candidate ${String(index+1).padStart(2,'0')}</b><div class="mt">${esc(item.fileName)}</div></div><span class="pill ok">วิเคราะห์แล้ว</span></div>
-  <div class="row" style="align-items:center;margin:12px 0"><div style="min-width:120px"><div style="font-size:12px;color:var(--tx)">Evidence Match Score</div><strong style="font-size:30px;color:var(--br)">${s.score===null?'—':s.score+'/100'}</strong></div><div style="flex:1;min-width:140px"><div class="bar"><i style="width:${s.score===null?0:s.score}%"></i></div><div class="mt">ประเมินได้ ${s.coverage}% ของน้ำหนักเกณฑ์ · ต้องตรวจสอบ ${s.unknownWeight}%</div></div></div>
-  <p><b>Candidate Summary</b><br>${esc(r.candidate_summary)}</p>
-  <h3 style="font-size:15px;color:var(--br)">Criteria Evidence</h3><p class="mt">“ไม่พบใน CV” หมายถึงเอกสารไม่แสดงหลักฐานเท่านั้น ไม่ได้แปลว่าผู้สมัครไม่มีทักษะนั้น</p>
-  ${s.items.map(c=>`<div class="chk ${c.status==='evidenced'?'ok':'wn'}"><span class="t">${c.status==='evidenced'?'✓':c.status==='not_stated'?'–':'!'}</span><div style="flex:1"><b>${esc(c.criterion)} (${c.weight}%) · ${aiStatusLabel(c.status)}</b><small>${esc(c.explanation||'')}${c.evidence?'<br><b>Evidence:</b> '+esc(c.evidence):''}${c.cv_excerpt?'<br><b>CV excerpt:</b> “'+esc(c.cv_excerpt)+'”':''}${c.verification_question?'<br><b>ถามเพิ่มเติม:</b> '+esc(c.verification_question):''}</small></div></div>`).join('')}
-  <details><summary>จุดแข็ง · ข้อมูลที่ยังขาด · คำถามสัมภาษณ์</summary>
-  <p><b>จุดแข็งที่มีหลักฐาน</b></p>${aiList(r.strengths)}<p><b>ข้อมูลที่ควรตรวจสอบเพิ่มเติม</b></p>${aiList(r.missing_information)}<p><b>Interview Suggestions</b></p>${aiList(r.interview_questions)}<p><b>ข้อจำกัดของการวิเคราะห์</b></p>${aiList(r.analysis_limitations)}</details></div>`;
+function localStatusLabel(s){return ({evidenced:'พบคำค้นครบตามเกณฑ์',partial:'พบคำค้นบางส่วน',not_stated:'ไม่พบคำค้นใน CV'})[s]||s;}
+function localList(items){return items&&items.length?'<ul>'+items.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<p class="mt">ไม่มีรายการ</p>';}
+function localResultCard(item,index){
+  if(item.error) return `<div class="card"><div class="top"><b>Candidate ${String(index+1).padStart(2,'0')} · ${esc(item.fileName)}</b><span class="pill er">อ่านไฟล์ไม่สำเร็จ</span></div><p class="mt">${esc(item.error)}</p></div>`;
+  return `<div class="card" style="margin-top:12px"><div class="top"><div><b>${esc(item.candidate)}</b><div class="mt">${esc(item.fileName)}</div></div><span class="pill ok">ประมวลผลในเครื่อง</span></div>
+  <div class="row" style="align-items:center;margin:12px 0"><div style="min-width:120px"><div style="font-size:12px;color:var(--tx)">Keyword Evidence Score</div><strong style="font-size:30px;color:var(--br)">${item.score}/100</strong></div><div style="flex:1;min-width:140px"><div class="bar"><i style="width:${item.score}%"></i></div><div class="mt">คะแนนจากคำค้นที่พบเทียบกับคำค้นที่กำหนด ไม่ใช่คะแนนความเหมาะสมหรือคำแนะนำการจ้าง</div></div></div>
+  <p><b>Local Summary</b><br>${esc(item.summary)}</p><h3 style="font-size:15px;color:var(--br)">Criteria Evidence</h3>
+  ${item.rows.map(r=>`<div class="chk ${r.status==='evidenced'?'ok':'wn'}"><span class="t">${r.status==='evidenced'?'✓':r.status==='partial'?'!':'–'}</span><div style="flex:1"><b>${esc(r.name)} (${r.weight}%) · ${localStatusLabel(r.status)}</b><small>คำค้นที่พบ: ${esc(r.matched.join(', ')||'ไม่พบ')}<br>อัตราการพบคำค้น: ${Math.round(r.ratio*100)}%${r.excerpt?'<br><b>ข้อความรอบหลักฐาน:</b> '+esc(r.excerpt):''}</small></div></div>`).join('')}
+  <details><summary>จุดแข็ง · ข้อมูลที่ยังไม่พบ · คำถามสำหรับ HR</summary><p><b>เกณฑ์ที่พบคำค้นครบ</b></p>${localList(item.strengths)}<p><b>เกณฑ์ที่พบคำค้นบางส่วน</b></p>${localList(item.partial)}<p><b>เกณฑ์ที่ไม่พบคำค้น</b></p>${localList(item.missing)}<p><b>ตัวอย่างคำถามสัมภาษณ์</b></p>${localList(item.questions)}</details></div>`;
 }
-function aiList(items){return Array.isArray(items)&&items.length?'<ul>'+items.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<p class="mt">ไม่มีรายการ</p>';}
+function localCsvCell(v){let s=String(v??'').replace(/[\r\n]+/g,' ');if(/^[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
+function localExportCsv(){
+  const rows=[['Candidate','Source file','Keyword Evidence Score','Summary','Criteria','Found terms','Missing criteria','Interview questions']];
+  AI_MATCH.results.forEach((x,i)=>{if(x.error){rows.push(['Candidate '+(i+1),x.fileName,'','ERROR: '+x.error,'','','','']);return;}rows.push([x.candidate,x.fileName,x.score,x.summary,x.rows.map(r=>r.name+': '+r.status).join(' | '),x.rows.map(r=>r.name+': '+r.matched.join(', ')).join(' | '),x.missing.join(' | '),x.questions.join(' | ')]);});
+  save(new Blob(['\ufeff'+rows.map(r=>r.map(localCsvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),'Local_CV_Matcher_Results.csv');
+}
 
 V.aiMatcher=()=>{
   const A=AI_MATCH,ok=A.results.filter(x=>!x.error).length,failed=A.results.length-ok;
-  return `<h1>AI CV Matcher</h1><p class="sub">วิเคราะห์หลักฐานจาก CV หลายคนเทียบกับ JD เดียวกัน เพื่อช่วยเตรียมการสัมภาษณ์ · ไม่ใช่ระบบตัดสินรับ/ไม่รับผู้สมัคร</p>
-  <div class="note">ข้อมูลที่ส่งให้ AI จะออกจาก Browser ไปยัง Backend ที่คุณกำหนด และส่งต่อไปยัง OpenAI API ฟังก์ชันนี้ไม่ใช่ Local Processing แบบ PDF Tools กรุณาใช้เฉพาะเอกสารที่ได้รับอนุญาตและผ่านการตรวจสอบนโยบายองค์กร</div>
-  <div class="card"><b>1. Backend Connection</b><p class="mt">ใส่ Worker URL และ Access Code ที่ผู้ดูแลระบบจัดเตรียมให้ (Access Code ไม่ใช่ OpenAI API Key)</p><div class="row"><label style="flex:1;min-width:240px">Worker URL <input data-ai-field="workerUrl" type="url" placeholder="https://hr-document-hub-ai.username.workers.dev" value="${esc(A.workerUrl)}" style="width:100%"></label><label style="flex:1;min-width:200px">Shared Access Code <input data-ai-field="accessCode" type="password" autocomplete="off" placeholder="Access Code" value="${esc(A.accessCode)}" style="width:100%"></label></div><p class="mt">แนะนำให้ป้องกัน Worker ด้วย Cloudflare Access สำหรับการใช้งานภายในองค์กร ส่วน Access Code ใน Prototype เป็นเพียงชั้นป้องกันเบื้องต้น</p></div>
-  <div class="card"><b>2. Job Description</b><p class="mt">เลือก JD หนึ่งไฟล์เพื่อใช้เป็นเกณฑ์เดียวกันในการวิเคราะห์ CV ทั้งชุด</p><label class="drop"><b>${A.jdFile?'JD: '+esc(A.jdFile.name):'เลือก JD PDF หรือ DOCX'}</b><span>ไม่เกิน 10 MB · PDF ต้องมี Text Layer</span><input type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" data-ai-file="jd"></label>${A.jdText?`<div class="pill ok">อ่านข้อความ JD แล้ว · ${A.jdText.length.toLocaleString()} ตัวอักษร</div>`:''}</div>
-  <div class="card"><b>3. Candidate CVs</b><p class="mt">เลือก CV หลายไฟล์ได้ในครั้งเดียว รุ่นนี้รองรับสูงสุด 15 คนต่อหนึ่ง Batch</p><label class="drop"><b>${A.cvs.length?'เลือกเพิ่ม CV (ปัจจุบัน '+A.cvs.length+' ไฟล์)':'เลือก CV PDF / DOCX หลายไฟล์'}</b><span>สูงสุด 15 ไฟล์ · PDF ไม่เกิน 8 MB ต่อไฟล์ · DOCX ไม่เกิน 8 MB</span><input type="file" multiple accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" data-ai-file="cvs"></label>${A.cvs.length?`<div>${A.cvs.map((f,i)=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--bd);padding:6px 0"><span>${String(i+1).padStart(2,'0')}. ${esc(f.name)} · ${mb(f.size)}</span><button class="btn g sm" data-ai-action="remove-cv" data-ai-index="${i}" ${A.running?'disabled':''}>ลบ</button></div>`).join('')}</div>`:''}</div>
-  <div class="card"><b>4. Assessment Criteria & Weights</b><p class="mt">กำหนดเกณฑ์จาก JD และปรับน้ำหนักให้รวมเป็น 100% ตัวอย่างนี้เป็นเพียงค่าเริ่มต้น</p><textarea data-ai-field="criteriaText" rows="5" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit">${esc(A.criteriaText)}</textarea><p class="mt">รูปแบบ: ชื่อเกณฑ์ | น้ำหนัก เช่น ทักษะที่จำเป็น | 35</p></div>
-  <div class="card"><b>5. Privacy & Human Review</b><label style="display:flex;align-items:flex-start;margin:8px 0"><input type="checkbox" data-ai-field="anonymize" ${A.anonymize?'checked':''} style="margin:4px 8px 0 0"><span>ปกปิดอีเมล เบอร์โทร เลขประจำตัว และข้อมูลระบุตัวตนบางรูปแบบก่อนส่ง (Best-effort; ไม่รับประกันว่าปกปิดได้ทั้งหมด)</span></label><label style="display:flex;align-items:flex-start;margin:8px 0"><input type="checkbox" data-ai-field="consent" ${A.consent?'checked':''} style="margin:4px 8px 0 0"><span>ฉันยืนยันว่าได้รับอนุญาตให้ใช้ข้อมูลนี้กับ AI API ตามนโยบายองค์กรแล้ว และได้ตรวจสอบ/ลดข้อมูลส่วนบุคคลที่ไม่จำเป็นก่อนส่ง</span></label><div class="note">ห้ามใช้ AI ประเมินอายุ เพศ รูปถ่าย เชื้อชาติ ศาสนา สุขภาพ สถานภาพครอบครัว หรือคุณลักษณะส่วนบุคคลอื่น ๆ และห้ามใช้คะแนนนี้ตัดผู้สมัครออกโดยอัตโนมัติ HR ต้องตรวจหลักฐานและตัดสินใจเอง</div><div class="row"><button class="btn" data-ai-action="run" ${A.running?'disabled':''}>${A.running?'กำลังวิเคราะห์...':'Analyze '+A.cvs.length+' CVs'}</button><button class="btn g" data-ai-action="clear" ${A.running?'disabled':''}>ล้างผลวิเคราะห์</button></div>${A.running?`<div class="mt">${esc(A.progressText)} (${A.current}/${A.cvs.length})</div><div class="bar"><i style="width:${A.cvs.length?A.current/A.cvs.length*100:0}%"></i></div>`:''}</div>
-  ${A.results.length?`<div class="card"><div class="top"><b>Batch Results</b><span class="pill ok">สำเร็จ ${ok} · ไม่สำเร็จ ${failed}</span></div><p class="mt">ผลเรียงตามลำดับไฟล์ต้นฉบับ ไม่ได้จัดอันดับผู้สมัคร คะแนนเป็นตัวชี้วัดหลักฐานในเอกสารเท่านั้น</p><div class="row"><button class="btn s" data-ai-action="export">Export CSV</button></div></div>${A.results.map(aiResultCard).join('')}`:''}`;
+  return `<h1>AI CV Matcher (Local)</h1><p class="sub">เปรียบเทียบ JD กับ CV หลายคนด้วยคำค้นและกฎที่กำหนดใน Browser · ยังไม่เรียก AI Model / API</p>
+  <div class="note"><b>สถานะปัจจุบัน: Local Rule-based Matching</b><br>ระบบค้นหาคำหรือวลีที่ระบุในเกณฑ์ แล้วคำนวณคะแนนจากสัดส่วนคำค้นที่พบ ไม่ได้เข้าใจความหมายเชิงบริบทเหมือน LLM และไม่ใช่ AI Hiring Decision ใช้เป็นตัวช่วยค้นหลักฐานเบื้องต้นเท่านั้น</div>
+  <div class="card"><b>1. Job Description</b><p class="mt">เลือก JD หนึ่งไฟล์เพื่อเป็นเกณฑ์กลาง · รองรับ PDF ที่มี Text Layer, DOCX และ TXT</p><label class="drop"><b>${A.jdFile?'JD: '+esc(A.jdFile.name):'เลือก JD PDF / DOCX / TXT'}</b><span>ไม่เกิน 10 MB · PDF สแกนต้อง OCR ก่อน</span><input type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" data-local-ai-file="jd"></label>${A.jdText?`<span class="pill ok">อ่านข้อความ JD แล้ว · ${A.jdText.length.toLocaleString()} ตัวอักษร</span><details><summary>ดูข้อความ JD ที่อ่านได้</summary><pre style="white-space:pre-wrap;max-height:220px;overflow:auto">${esc(A.jdText.slice(0,8000))}</pre></details>`:''}</div>
+  <div class="card"><b>2. Candidate CVs</b><p class="mt">เพิ่ม CV หลายไฟล์พร้อมกัน · สูงสุด 15 คน · รองรับ PDF / DOCX / TXT · ทุกไฟล์อ่านใน Browser</p><label class="drop"><b>${A.cvs.length?'เพิ่ม CV (ปัจจุบัน '+A.cvs.length+' ไฟล์)':'เลือก CV หลายไฟล์'}</b><span>ไม่เกิน 8 MB ต่อไฟล์ · PDF ต้องมี Text Layer หรือ OCR เป็น TXT ก่อน</span><input type="file" multiple accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" data-local-ai-file="cvs"></label>${A.cvs.length?A.cvs.map((f,i)=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--bd);padding:6px 0"><span>${String(i+1).padStart(2,'0')}. ${esc(f.name)} · ${mb(f.size)}</span><button class="btn g sm" data-local-ai-action="remove-cv" data-local-ai-index="${i}">ลบ</button></div>`).join(''):''}</div>
+  <div class="card"><b>3. Criteria & Weights</b><p class="mt">รูปแบบ: ชื่อเกณฑ์ | น้ำหนัก | คำค้น/คำพ้อง (คั่นด้วย comma) · น้ำหนักรวมต้องเท่ากับ 100%</p><textarea data-local-ai-field="criteriaText" rows="7" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit">${esc(A.criteriaText)}</textarea><div class="note">ตัวอย่าง: ทักษะ Excel | 30 | excel, pivot table, vlookup, xlookup<br>ควรใส่คำพ้องภาษาไทยและอังกฤษเองตาม JD เพื่อช่วยลดกรณีคำเดียวกันเขียนต่างรูปแบบ</div></div>
+  <div class="card"><b>4. Privacy & Human Review</b><p class="mt">ไม่มี Backend URL, API Key หรือการเรียกบริการ AI จากฟังก์ชันนี้ ไฟล์และข้อความอยู่ในหน่วยความจำของ Browser และจะหายเมื่อรีเฟรช/ปิดหน้า</p><div class="note">ระบบไม่จัดอันดับและไม่แนะนำให้รับ/ปฏิเสธผู้สมัคร “ไม่พบคำค้น” หมายถึงไม่พบวลีที่กำหนดในเอกสารเท่านั้น ไม่ได้แปลว่าผู้สมัครไม่มีทักษะ HR ต้องอ่าน CV และตรวจหลักฐานด้วยตนเอง</div><div class="row"><button class="btn" data-local-ai-action="run" ${A.running?'disabled':''}>${A.running?'กำลังประมวลผล...':'Analyze '+A.cvs.length+' CVs Locally'}</button><button class="btn g" data-local-ai-action="clear" ${A.running?'disabled':''}>ล้างผลวิเคราะห์</button></div>${A.running?`<div class="mt">${esc(A.progressText)} (${A.current}/${A.cvs.length})</div><div class="bar"><i style="width:${A.cvs.length?A.current/A.cvs.length*100:0}%"></i></div>`:''}</div>
+  ${A.results.length?`<div class="card"><div class="top"><b>Batch Results</b><span class="pill ok">สำเร็จ ${ok} · ไม่สำเร็จ ${failed}</span></div><p class="mt">แสดงตามลำดับไฟล์ต้นฉบับ ไม่ได้จัดอันดับผู้สมัคร</p><button class="btn s" data-local-ai-action="export">Export CSV</button></div>${A.results.map(localResultCard).join('')}`:''}`;
 };
 
-function extName(name){const i=String(name||'').lastIndexOf('.');return i>=0?name.slice(i+1).toLowerCase():'';}
-function aiCsvCell(value){let s=String(value??'').replace(/[\r\n]+/g,' ');if(/^[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
-function aiExportCsv(){
-  const rows=[['Candidate','Source file','Evidence match score','Assessment coverage','Summary','Strengths','Missing information','Interview questions']];
-  AI_MATCH.results.forEach((x,i)=>{if(x.error){rows.push([`Candidate ${i+1}`,x.fileName,'','','ERROR: '+x.error,'','','']);return;}const s=x.scoring,r=x.result;rows.push([`Candidate ${String(i+1).padStart(2,'0')}`,x.fileName,s.score??'',s.coverage+'%',r.candidate_summary,(r.strengths||[]).join(' | '),(r.missing_information||[]).join(' | '),(r.interview_questions||[]).join(' | ')]);});
-  const csv='\uFEFF'+rows.map(r=>r.map(aiCsvCell).join(',')).join('\r\n');
-  save(new Blob([csv],{type:'text/csv;charset=utf-8'}),'AI_CV_Matcher_Results.csv');
-}
-
-async function aiRunBatch(){
-  const A=AI_MATCH;
-  if(A.running)return;
-  let criteria;
-  try{criteria=aiCriteria();}catch(e){return toast(e.message);}
-  if(!A.workerUrl.trim()||!/^https:\/\//i.test(A.workerUrl.trim()))return toast('กรุณากรอก Worker URL ที่เป็น HTTPS');
-  if(!A.accessCode)return toast('กรุณากรอก Shared Access Code');
-  if(!A.jdFile||!A.jdText)return toast('กรุณาเลือกและอ่านข้อความ JD ก่อน');
+async function localRunBatch(){
+  const A=AI_MATCH;if(A.running)return;
+  let criteria;try{criteria=localCriteria();}catch(e){return toast(e.message);}
+  if(!A.jdFile||!A.jdText)return toast('กรุณาเลือก JD และอ่านข้อความก่อน');
   if(!A.cvs.length)return toast('กรุณาเลือก CV อย่างน้อย 1 ไฟล์');
-  if(A.cvs.length>15)return toast('รุ่นนี้รองรับไม่เกิน 15 CV ต่อ Batch');
-  if(!A.consent)return toast('กรุณายืนยันสิทธิ์และการอนุมัติให้ส่งข้อมูลไปยัง AI API');
-  A.running=true;A.results=[];A.current=0;A.progressText='เตรียมวิเคราะห์';R();
+  A.running=true;A.results=[];A.current=0;R();
   try{
     for(let i=0;i<A.cvs.length;i++){
-      const file=A.cvs[i];A.current=i+1;A.progressText='กำลังอ่านข้อความและวิเคราะห์ Candidate '+String(i+1).padStart(2,'0');R();
-      try{
-        const raw=await aiReadDocument(file,'cv');
-        const cvText=A.anonymize?aiMaskIdentifiers(raw):raw;
-        const response=await fetch(A.workerUrl.trim().replace(/\/+$/,'')+'/analyze',{
-          method:'POST',headers:{'content-type':'application/json','X-HR-HUB-ACCESS':A.accessCode},
-          body:JSON.stringify({candidateId:'Candidate '+String(i+1).padStart(2,'0'),jdText:A.jdText,cvText,criteria})
-        });
-        let payload={};try{payload=await response.json();}catch(_){}
-        if(!response.ok)throw Error(payload.error||('Backend error '+response.status));
-        const result=payload.result;
-        if(!result||!Array.isArray(result.criteria_assessment))throw Error('ผลลัพธ์ AI ไม่อยู่ในรูปแบบที่รองรับ');
-        A.results.push({fileName:file.name,result,scoring:aiScore(result,criteria),model:payload.model||''});
-      }catch(err){A.results.push({fileName:file.name,error:err.message||'เกิดข้อผิดพลาด'});}
+      const f=A.cvs[i];A.current=i+1;A.progressText='กำลังอ่านข้อความ Candidate '+String(i+1).padStart(2,'0');R();
+      try{const text=await localReadDocument(f,'cv');A.results.push(localMatchOne(f.name,text,criteria,i));}
+      catch(err){A.results.push({fileName:f.name,error:err.message||'อ่านไฟล์ไม่สำเร็จ'});}
       A.current=i+1;R();
     }
-  }finally{A.running=false;A.progressText='เสร็จสิ้น';R();}
+  } finally {A.running=false;A.progressText='ประมวลผลเสร็จ';R();}
 }
 
 document.addEventListener('change',async e=>{
-  const t=e.target;
-  if(t.dataset.aiFile){const kind=t.dataset.aiFile,files=[...t.files];t.value='';if(!files.length)return;
-    if(kind==='jd'){
-      const f=files[0];if(!['pdf','docx'].includes(extName(f.name)))return toast('รองรับ JD PDF และ DOCX');
-      AI_MATCH.jdFile=f;AI_MATCH.jdText='';AI_MATCH.results=[];R();
-      try{AI_MATCH.jdText=await aiReadDocument(f,'jd');toast('อ่านข้อความ JD สำเร็จ');}catch(err){AI_MATCH.jdFile=null;toast(err.message||'อ่าน JD ไม่สำเร็จ');}
-      R();
-    }else{
-      const valid=files.filter(f=>['pdf','docx'].includes(extName(f.name))&&f.size<=8*1048576);
-      const invalid=files.length-valid.length;
-      const existing=AI_MATCH.cvs;
-      const merged=[...existing,...valid];
-      const seen=new Set();AI_MATCH.cvs=merged.filter(f=>{const k=f.name+'|'+f.size+'|'+f.lastModified;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,15);
-      AI_MATCH.results=[];if(invalid)toast('ข้าม '+invalid+' ไฟล์ (ชนิดไม่รองรับหรือเกิน 8 MB)');if(merged.length>15)toast('เพิ่มได้สูงสุด 15 CV');R();
-    }
+  const t=e.target;if(!t.dataset.localAiFile)return;
+  const kind=t.dataset.localAiFile,files=[...t.files];t.value='';if(!files.length)return;
+  if(kind==='jd'){
+    const f=files[0];AI_MATCH.jdFile=f;AI_MATCH.jdText='';AI_MATCH.results=[];R();
+    try{AI_MATCH.jdText=await localReadDocument(f,'jd');toast('อ่านข้อความ JD สำเร็จ');}
+    catch(err){AI_MATCH.jdFile=null;toast(err.message||'อ่าน JD ไม่สำเร็จ');}R();
+  }else{
+    const valid=files.filter(f=>['pdf','docx','txt'].includes(extName(f.name))&&f.size<=8*1048576),invalid=files.length-valid.length;
+    const merged=[...AI_MATCH.cvs,...valid],seen=new Set();AI_MATCH.cvs=merged.filter(f=>{const k=f.name+'|'+f.size+'|'+f.lastModified;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,15);
+    AI_MATCH.results=[];if(invalid)toast('ข้าม '+invalid+' ไฟล์ (ชนิดไม่รองรับหรือเกิน 8 MB)');if(merged.length>15)toast('เพิ่มได้สูงสุด 15 CV');R();
   }
 });
-document.addEventListener('input',e=>{
-  const k=e.target.dataset.aiField;if(!k)return;
-  if(k==='workerUrl'||k==='accessCode'||k==='criteriaText')AI_MATCH[k]=e.target.value;
-});
-document.addEventListener('change',e=>{
-  const k=e.target.dataset.aiField;if(!k)return;
-  if(k==='anonymize'||k==='consent')AI_MATCH[k]=e.target.checked;
-});
+document.addEventListener('input',e=>{if(e.target.dataset.localAiField==='criteriaText')AI_MATCH.criteriaText=e.target.value;});
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-ai-action]');if(!t)return;
-  const a=t.dataset.aiAction;
-  if(a==='run')aiRunBatch();
-  else if(a==='clear'){if(AI_MATCH.running)return;AI_MATCH.results=[];AI_MATCH.current=0;AI_MATCH.progressText='';R();}
-  else if(a==='export')aiExportCsv();
-  else if(a==='remove-cv'){if(AI_MATCH.running)return;AI_MATCH.cvs.splice(Number(t.dataset.aiIndex),1);AI_MATCH.results=[];R();}
+  const t=e.target.closest('[data-local-ai-action]');if(!t)return;const a=t.dataset.localAiAction;
+  if(a==='run')localRunBatch();
+  else if(a==='clear'){if(AI_MATCH.running)return;AI_MATCH.results=[];AI_MATCH.current=0;R();}
+  else if(a==='export')localExportCsv();
+  else if(a==='remove-cv'){if(AI_MATCH.running)return;AI_MATCH.cvs.splice(Number(t.dataset.localAiIndex),1);AI_MATCH.results=[];R();}
 });
+
+/* ===== Phase 4: OCR PDF to TXT (browser-side Tesseract.js) ===== */
+Object.assign(T,{ocr:{n:'OCR PDF to Text',d:'อ่านข้อความจาก PDF สแกนด้วย OCR บน Browser',c:'conv',p:0}});
+S.ocr={file:null,lang:'tha+eng',text:'',progress:'',busy:false};
+V.ocr=()=>{const C=S.ocr;return `<h1>OCR PDF to Text</h1><p class="sub">อ่านข้อความจาก PDF ที่เป็นภาพด้วย OCR ใน Browser แล้วส่งออกเป็น TXT</p><div class="note">ไฟล์ PDF ไม่ถูกอัปโหลดไปประมวลผลที่ Cloud แต่ Tesseract.js, WebAssembly Core และ Language Data จะถูกดาวน์โหลดจาก CDN เมื่อใช้งานครั้งแรก หากต้องการ Offline/No-CDN ต้องนำไฟล์ Engine และโมเดลภาษาไปโฮสต์ภายในองค์กร</div>${dz('ocr','.pdf','เลือก PDF สแกน','แนะนำไม่เกิน 10 หน้า และขนาดไม่เกิน 15 MB')}${C.file?`<div class="card"><b>${esc(C.file.name)}</b><div class="row"><label>ภาษา OCR ${sel('lang',[['tha+eng','ไทย + English'],['eng','English'],['tha','ไทย']])}</label><button class="btn" data-a="go" ${C.busy?'disabled':''}>เริ่ม OCR</button><button class="btn g" data-a="clr" ${C.busy?'disabled':''}>ล้างรายการ</button></div>${C.busy?`<p class="mt">${esc(C.progress)}</p>${prog()}`:''}${C.text?`<div class="row"><button class="btn s" data-a="txt">ดาวน์โหลด TXT</button><button class="btn g" data-a="copy">คัดลอกข้อความ</button></div><textarea readonly rows="14" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit">${esc(C.text)}</textarea><p class="mt">ตรวจทานผล OCR ก่อนใช้งาน เพราะอาจอ่านอักษรไทย ตัวเลข และตารางผิดพลาดได้</p>`:''}</div>`:''}`};
+async function loadTesseract(){if(window.Tesseract)return;await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js';s.onload=resolve;s.onerror=()=>reject(Error('โหลด OCR Engine ไม่สำเร็จ ตรวจสอบการเชื่อมต่อ CDN'));document.head.appendChild(s);});}
+ADD.ocr=fs=>{const f=pdfOnly(fs)[0];if(!f)return;if(f.size>15*1048576)return toast('ไฟล์ใหญ่เกิน 15 MB');S.ocr.file=f;S.ocr.text='';S.ocr.progress='';R();};
+A.ocr={clr(){S.ocr.file=null;S.ocr.text='';S.ocr.progress='';R();},txt(){const C=S.ocr;save(new Blob([C.text],{type:'text/plain;charset=utf-8'}),stem(C.file.name)+'_OCR.txt');},copy(){const C=S.ocr;if(navigator.clipboard?.writeText)navigator.clipboard.writeText(C.text).then(()=>toast('คัดลอกข้อความแล้ว')).catch(()=>toast('คัดลอกไม่สำเร็จ'));else toast('เบราว์เซอร์นี้ไม่รองรับ Clipboard API')},async go(){
+  const C=S.ocr;await run(C,async()=>{if(!C.file)throw Error('กรุณาเลือก PDF');await loadTesseract();const pdf=await openPdf(C.file);if(pdf.n>10){pdf.d.destroy();throw Error('OCR รุ่นนี้จำกัดไม่เกิน 10 หน้า');}
+    const langs=C.lang.split('+');let worker=null;const results=[];
+    try{worker=await Tesseract.createWorker(langs,1,{logger:m=>{if(m.status)C.progress=m.status+(m.progress!==undefined?' '+Math.round(m.progress*100)+'%':'');}});
+      for(let n=1;n<=pdf.n;n++){C.progress='กำลัง OCR หน้า '+n+'/'+pdf.n;R();setMsg('OCR หน้า '+n+'/'+pdf.n);const page=await pdf.d.getPage(n),baseVp=page.getViewport({scale:1}),scale=Math.min(1.6,2400/Math.max(baseVp.width,baseVp.height)),vp=page.getViewport({scale}),canvas=document.createElement('canvas');canvas.width=vp.width;canvas.height=vp.height;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);await page.render({canvasContext:ctx,viewport:vp}).promise;const result=await worker.recognize(canvas);results.push('--- Page '+n+' ---\n'+String(result.data.text||'').trim());canvas.width=canvas.height=0;R();}
+      C.text=results.join('\n\n').trim();if(!C.text)throw Error('OCR ไม่พบข้อความในเอกสาร');
+    } finally {if(worker)await worker.terminate();pdf.d.destroy();}
+  });}};
+
+/* ===== Phase 4: Prepare a Form (AcroForm fields) ===== */
+T.forms={n:'Prepare a Form',d:'เพิ่มฟิลด์ Text, Checkbox และ Dropdown บน PDF',c:'sign',p:0};
+S.forms={file:null,buf:null,items:[],fieldType:'text',fieldName:'field_1',fieldOptions:'Option 1\nOption 2',fieldWidth:190,fieldHeight:28,placing:false,res:null,busy:false};
+V.forms=()=>{const C=S.forms;return `<h1>Prepare a Form</h1><p class="sub">สร้าง PDF Form Fields (AcroForm) บนไฟล์ PDF โดยวางตำแหน่งบนหน้ากระดาษ</p>${dz('forms','.pdf','เลือก PDF ที่ต้องการเพิ่มฟอร์ม','เลือกไฟล์ 1 ไฟล์ · ใช้ตำแหน่งแบบคลิกบนหน้าตัวอย่าง')}${C.file?`<div class="card"><b>${esc(C.file.name)}</b><div class="row"><label>ชนิดฟิลด์ ${sel('fieldType',[['text','Text Field'],['check','Checkbox'],['dropdown','Dropdown']])}</label><label>ชื่อ Field <input type="text" data-k="fieldName" value="${esc(C.fieldName)}"></label></div><div class="row"><label>กว้าง (pt) ${num('fieldWidth',40,500)}</label><label>สูง (pt) ${num('fieldHeight',16,120)}</label></div>${C.fieldType==='dropdown'?`<label style="display:block">ตัวเลือก (บรรทัดละข้อ)<textarea data-k="fieldOptions" rows="3" style="width:100%">${esc(C.fieldOptions)}</textarea></label>`:''}<div class="row"><button class="btn" data-a="place" ${C.placing?'disabled':''}>คลิกเพื่อวางฟิลด์บนหน้า</button><button class="btn s" data-a="create" ${!C.items.length||C.busy?'disabled':''}>สร้าง PDF Form</button><button class="btn g" data-a="clr">ล้าง</button></div>${C.placing?'<div class="note">คลิกตำแหน่งบนหน้าตัวอย่างด้านล่างเพื่อวางฟิลด์หนึ่งรายการ</div>':''}${vwShell('forms')}<p class="mt">ฟิลด์ที่วางแล้ว ${C.items.length} รายการ</p>${C.items.map((it,i)=>`<div class="row"><span>${i+1}. ${esc(it.name)} · หน้า ${it.p} · ${it.type}</span><button class="btn g sm" data-a="remove" data-i="${i}">ลบ</button></div>`).join('')}<p class="mt">หมายเหตุ: ใช้ฟอนต์ PDF มาตรฐานสำหรับ Appearance ของฟิลด์ รุ่นนี้ควรใช้ชื่อ Field และตัวเลือกภาษาอังกฤษ/ASCII หากต้องการภาษาไทยในค่าฟิลด์ต้องฝังฟอนต์เพิ่มเติม</p>${C.busy?prog():''}${C.res?`<div class="note">สร้างฟอร์มแล้ว: ${esc(C.res.name)}</div><button class="btn s" data-a="dl">ดาวน์โหลด ${esc(C.res.name)}</button>`:''}</div>`:''}`};
+ADD.forms=async fs=>{const f=pdfOnly(fs)[0];if(!f)return;try{const C=S.forms;await vwOpen(f,'forms');C.file=f;C.buf=VW.buf;C.items=[];C.res=null;C.placing=false;R();setTimeout(()=>vwRender(),0);}catch(e){toast(em(e));}};
+A.forms=Object.assign({},NV,{clr(){const C=S.forms;C.file=null;C.items=[];C.res=null;C.placing=false;if(VW.tool==='forms'&&VW.d){VW.d.destroy();VW.d=null;VW.tool=null;}R();},place(){S.forms.placing=true;R();toast('คลิกตำแหน่งบนหน้าตัวอย่างเพื่อวางฟิลด์');},remove(t){S.forms.items.splice(Number(t.dataset.i),1);R();},dl(){if(S.forms.res)save(S.forms.res.out,S.forms.res.name);},async create(){const C=S.forms;if(!C.items.length)return toast('กรุณาวางฟิลด์อย่างน้อย 1 รายการ');await run(C,async()=>{const d=await PDFLib.PDFDocument.load(C.buf),form=d.getForm(),seen=new Set();const font=await d.embedFont(PDFLib.StandardFonts.Helvetica);
+  for(const it of C.items){if(seen.has(it.name))throw Error('ชื่อ Field ซ้ำ: '+it.name);seen.add(it.name);const page=d.getPage(it.p-1),y=page.getHeight()-it.y-it.h,box={x:it.x,y,width:it.w,height:it.h,borderWidth:1,fontSize:10,borderColor:PDFLib.rgb(.45,.39,.38),backgroundColor:PDFLib.rgb(1,1,1)};
+    if(it.type==='text'){const f=form.createTextField(it.name);f.addToPage(page,box);}
+    else if(it.type==='check'){const f=form.createCheckBox(it.name);f.addToPage(page,{x:it.x,y,width:Math.min(it.w,22),height:Math.min(it.h,22),borderWidth:1});}
+    else{const f=form.createDropdown(it.name),opts=it.options.filter(Boolean);if(!opts.length)throw Error('Dropdown ต้องมีตัวเลือก');if(opts.some(v=>/[^\x20-\x7e]/.test(v)))throw Error('Dropdown รุ่นนี้รองรับตัวเลือกภาษาอังกฤษ/ASCII เท่านั้น');f.addOptions(opts);f.addToPage(page,box);}
+  }
+  form.updateFieldAppearances(font);const blob=pout(await d.save());C.res={out:blob,name:nm(C.file,'_fillable.pdf')};});}});
+
+// Place form fields by clicking the PDF preview. Existing viewer remains client-side.
+document.addEventListener('pointerdown',e=>{
+  if(cur==='forms'&&VW.tool==='forms'&&S.forms.placing&&e.target.id==='vo'){
+    const [x,y]=vp(e),C=S.forms,type=C.fieldType,base=(C.fieldName||'field').trim().replace(/[^A-Za-z0-9_.-]+/g,'_')||'field';
+    let name=base,n=2;while(C.items.some(it=>it.name===name)){name=base+'_'+n++;}
+    const w=type==='check'?22:Math.max(40,+C.fieldWidth||190),h=type==='check'?22:Math.max(16,+C.fieldHeight||28);
+    C.items.push({p:VW.pg,x,y,w,h,name,type,options:(C.fieldOptions||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean)});C.placing=false;R();e.preventDefault();
+  }
+});
+const _baseVwDraw = vwDraw;
+vwDraw = function(){
+  _baseVwDraw();
+  if(cur==='forms'&&$('#vo')){const o=$('#vo');S.forms.items.forEach((it,i)=>{if(it.p!==VW.pg)return;const el=document.createElement('div');el.className='formfield';el.style.cssText=`position:absolute;left:${it.x*VW.sc}px;top:${it.y*VW.sc}px;width:${it.w*VW.sc}px;height:${it.h*VW.sc}px`;el.textContent=it.name+' · '+it.type;const rm=document.createElement('button');rm.className='x';rm.type='button';rm.textContent='×';rm.addEventListener('click',ev=>{ev.stopPropagation();S.forms.items.splice(i,1);R();});el.appendChild(rm);o.appendChild(el);});}
+};
+new MutationObserver(()=>{if((cur==='forms'||cur==='edit')&&VW.tool===cur&&VW.d&&$('#vc'))vwRender();}).observe($('#main'),{childList:true});
+
+/* ===== Phase 5: Edit PDF (text/image/highlight overlays) ===== */
+T.edit={n:'Edit PDF (Overlay)',d:'วางข้อความ รูปภาพ และไฮไลต์ลงบน PDF',c:'pdf',p:0};
+S.edit={file:null,buf:null,items:[],placing:'',text:'',fontSize:16,color:'#222222',highlightWidth:180,highlightHeight:26,pendingImage:null,res:null,busy:false};
+V.edit=()=>{const C=S.edit;return `<h1>Edit PDF (Overlay)</h1><p class="sub">เพิ่มองค์ประกอบบน PDF โดยคลิกตำแหน่งที่ต้องการ · ประมวลผลใน Browser</p><div class="note">ข้อความที่เพิ่มจะถูกวาดเป็นภาพ PNG เพื่อรองรับภาษาไทย จึงไม่สามารถค้นหา/เลือกข้อความนั้นได้ และเป็นการเพิ่มทับหน้า ไม่ได้แก้ข้อความต้นฉบับเดิม</div>${dz('edit','.pdf','เลือก PDF ที่ต้องการแก้ไข','1 ไฟล์ต่อครั้ง')}${C.file?`<div class="card"><div class="row"><label style="flex:1">ข้อความ <input type="text" data-k="text" value="${esc(C.text)}" style="width:100%"></label><label>ขนาด ${num('fontSize',8,72)}</label><label>สี <input type="color" data-k="color" value="${C.color}"></label><button class="btn" data-a="placeText">วางข้อความ</button></div><div class="row"><label>ไฮไลต์กว้าง ${num('highlightWidth',40,500)}</label><label>สูง ${num('highlightHeight',12,100)}</label><button class="btn g" data-a="placeHighlight">วางไฮไลต์</button></div><div class="row"><label class="btn g">เลือกรูปภาพ<input type="file" accept="image/png,image/jpeg" data-tool="editimg" style="display:none"></label>${C.pendingImage?`<span class="mt">เลือกรูปแล้ว</span><button class="btn g sm" data-a="placeImage">วางรูป</button>`:''}<button class="btn s" data-a="save" ${!C.items.length||C.busy?'disabled':''}>บันทึก PDF ใหม่</button><button class="btn g" data-a="clr">ล้างรายการ</button></div>${C.placing?'<div class="note">คลิกตำแหน่งบนหน้าตัวอย่างเพื่อวางองค์ประกอบ</div>':''}${vwShell('edit')}<p class="mt">องค์ประกอบที่วาง ${C.items.length} รายการ</p>${C.items.map((it,i)=>`<div class="row"><span>${i+1}. หน้า ${it.p} · ${it.k==='txt'?'ข้อความ':it.k==='hl'?'ไฮไลต์':'รูปภาพ'} ${it.t?': '+esc(it.t):''}</span><button class="btn g sm" data-a="remove" data-i="${i}">ลบ</button></div>`).join('')}${C.busy?prog():''}${C.res?`<button class="btn s" data-a="dl">ดาวน์โหลด ${esc(C.res.name)}</button>`:''}</div>`:''}`};
+ADD.edit=async fs=>{const f=pdfOnly(fs)[0];if(!f)return;try{await vwOpen(f,'edit');const C=S.edit;C.file=f;C.buf=VW.buf;C.items=[];C.pendingImage=null;C.res=null;C.placing='';R();setTimeout(()=>vwRender(),0);}catch(e){toast(em(e));}};
+ADD.editimg=fs=>{const f=fs[0];if(!f||!['image/png','image/jpeg'].includes(f.type))return toast('รองรับ PNG และ JPG');if(f.size>5*1048576)return toast('รูปใหญ่เกิน 5 MB');const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,180/im.width,120/im.height);S.edit.pendingImage={url:rd.result,mime:f.type,w:Math.round(im.width*k),h:Math.round(im.height*k)};R();};im.src=rd.result;};rd.onerror=()=>toast('อ่านรูปไม่สำเร็จ');rd.readAsDataURL(f);};
+A.edit=Object.assign({},NV,{clr(){const C=S.edit;C.file=null;C.items=[];C.pendingImage=null;C.placing='';C.res=null;if(VW.tool==='edit'&&VW.d){VW.d.destroy();VW.d=null;VW.tool=null;}R();},remove(t){S.edit.items.splice(Number(t.dataset.i),1);R();},placeText(){if(!S.edit.text.trim())return toast('กรุณากรอกข้อความ');S.edit.placing='txt';R();toast('คลิกตำแหน่งบนหน้า PDF');},placeHighlight(){S.edit.placing='hl';R();toast('คลิกตำแหน่งเริ่มต้นของไฮไลต์');},placeImage(){if(!S.edit.pendingImage)return;S.edit.placing='img';R();toast('คลิกตำแหน่งวางรูปภาพ');},dl(){if(S.edit.res)save(S.edit.res.out,S.edit.res.name);},async save(){const C=S.edit;await run(C,async()=>{const d=await PDFLib.PDFDocument.load(C.buf);for(const it of C.items){const p=d.getPage(it.p-1),H=p.getHeight();if(it.k==='txt'){const t=await txtImg(it.t,it.fs,it.color),im=await d.embedPng(t.bytes);p.drawImage(im,{x:it.x,y:H-it.y-t.h,width:it.w,height:it.h});}
+  else if(it.k==='img'){const bytes=b64(it.url),im=it.mime==='image/png'?await d.embedPng(bytes):await d.embedJpg(bytes);p.drawImage(im,{x:it.x,y:H-it.y-it.h,width:it.w,height:it.h});}
+  else if(it.k==='hl'){const c=it.color||'#FFD400',r=parseInt(c.slice(1,3),16)/255,g=parseInt(c.slice(3,5),16)/255,b=parseInt(c.slice(5,7),16)/255;p.drawRectangle({x:it.x,y:H-it.y-it.h,width:it.w,height:it.h,color:PDFLib.rgb(r,g,b),opacity:.32,borderWidth:0});}}
+  C.res={out:pout(await d.save()),name:nm(C.file,'_edited.pdf')};});}});
+document.addEventListener('pointerdown',e=>{
+  if(cur!=='edit'||VW.tool!=='edit'||!S.edit.placing||e.target.id!=='vo')return;
+  const C=S.edit,[x,y]=vp(e),p={p:VW.pg,x,y};
+  if(C.placing==='txt'){const t=C.text.trim(),size=+C.fontSize||16;C.items.push({...p,k:'txt',t,fs:size,color:C.color,w:Math.max(24,t.length*size*.65),h:size*1.6});}
+  else if(C.placing==='hl')C.items.push({...p,k:'hl',w:+C.highlightWidth||180,h:+C.highlightHeight||26,color:'#FFD400'});
+  else if(C.placing==='img'&&C.pendingImage)C.items.push({...p,k:'img',url:C.pendingImage.url,mime:C.pendingImage.mime,w:C.pendingImage.w,h:C.pendingImage.h});
+  C.placing='';R();e.preventDefault();
+});
+
+/* ===== Phase 5: PDF text to DOCX (text-only conversion) ===== */
+T.pdf2word={n:'PDF to DOCX (Text Only)',d:'ดึงข้อความจาก PDF และส่งออกเป็น Word แบบข้อความ',c:'conv',p:0};
+S.pdf2word={file:null,text:'',pages:0,busy:false};
+V.pdf2word=()=>{const C=S.pdf2word;return `<h1>PDF to DOCX (Text Only)</h1><p class="sub">ดึงข้อความที่เลือกได้จาก PDF และสร้างไฟล์ DOCX แบบเรียบง่าย</p><div class="note">เครื่องมือนี้ไม่รักษา Layout ตาราง รูปภาพ คอลัมน์ หรือรูปแบบตัวอักษรเดิม และไม่รองรับ OCR ในตัว หากเป็น PDF สแกนให้ใช้ OCR PDF to Text ก่อน</div>${dz('pdf2word','.pdf','เลือก PDF ที่มี Text Layer','1 ไฟล์ต่อครั้ง')}${C.file?`<div class="card"><b>${esc(C.file.name)}</b><p class="mt">${C.pages} หน้า · ${C.text.length.toLocaleString()} ตัวอักษร</p><textarea data-k="text" rows="16" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit">${esc(C.text)}</textarea><div class="row"><button class="btn s" data-a="go" ${C.busy?'disabled':''}>ส่งออก DOCX</button><button class="btn g" data-a="clr">ล้างรายการ</button></div>${C.busy?prog():''}</div>`:''}`};
+ADD.pdf2word=async fs=>{const f=pdfOnly(fs)[0];if(!f)return;const C=S.pdf2word;C.file=f;C.text='';C.pages=0;try{const r=await lines(f);C.text=r.L.join('\n');C.pages=r.n;if(C.text.length<30)throw Error('ไม่พบ Text Layer ใน PDF ใช้ OCR PDF to Text ก่อน');}catch(e){C.file=null;toast(e.message||'อ่านข้อความ PDF ไม่สำเร็จ');}R();};
+function xmlEscape(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+async function makeTextDocx(text){
+  const z=new JSZip(),paras=String(text||'').replace(/\r/g,'').split('\n').map(line=>`<w:p><w:r><w:t xml:space="preserve">${xmlEscape(line)}</w:t></w:r></w:p>`).join('');
+  z.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+  z.folder('_rels').file('.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+  z.folder('word').file('document.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${paras}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr></w:body></w:document>`);
+  return z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+A.pdf2word={clr(){S.pdf2word.file=null;S.pdf2word.text='';R();},async go(){const C=S.pdf2word;if(!C.text.trim())return toast('ไม่มีข้อความสำหรับส่งออก');await run(C,async()=>{const blob=await makeTextDocx(C.text);save(blob,nm(C.file,'_text.docx'));});}};
+
+/* ===== Phase 5: HTML to PDF via safe browser Print ===== */
+T.html2pdf={n:'HTML to PDF (Print)',d:'แสดง HTML ที่ผ่านการกรอง แล้วใช้ Print / Save as PDF',c:'conv',p:0};
+S.html2pdf={file:null,html:'<h1>หัวข้อเอกสาร</h1>\n<p>พิมพ์หรือวางเนื้อหา HTML ที่นี่</p>',busy:false};
+V.html2pdf=()=>{const C=S.html2pdf;return `<h1>HTML to PDF (Print)</h1><p class="sub">แปลง HTML เป็น PDF ผ่าน Print ของ Browser โดยผู้ใช้เลือก Save as PDF เอง</p><div class="note">ระบบจะตัด Script, Style, iframe, object, form และองค์ประกอบที่อาจเรียกใช้เนื้อหาภายนอกออกก่อนพิมพ์ รองรับ HTML พื้นฐาน เช่น Heading, Paragraph, List และ Table</div><div class="card"><label class="btn g">เลือกไฟล์ HTML<input type="file" accept=".html,.htm,text/html" data-tool="html2pdf" style="display:none"></label><textarea data-k="html" rows="16" style="width:100%;margin-top:12px;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit">${esc(C.html)}</textarea><div class="row"><button class="btn" data-a="print">เปิดหน้าพิมพ์ / Save as PDF</button><button class="btn g" data-a="reset">คืนค่าเริ่มต้น</button></div></div>`};
+ADD.html2pdf=async fs=>{const f=fs[0];if(!f||!['html','htm'].includes(extName(f.name)))return toast('เลือกไฟล์ HTML');if(f.size>2*1048576)return toast('HTML ใหญ่เกิน 2 MB');S.html2pdf.file=f;S.html2pdf.html=await f.text();R();};
+function sanitizePrintHtml(raw){
+  const doc=new DOMParser().parseFromString(String(raw||''),'text/html');
+  doc.querySelectorAll('script,style,link,meta,base,iframe,object,embed,svg,math,video,audio,form,input,button,canvas,img,source').forEach(x=>x.remove());
+  const allowed=new Set(['H1','H2','H3','H4','H5','H6','P','BR','UL','OL','LI','TABLE','THEAD','TBODY','TFOOT','TR','TH','TD','STRONG','B','EM','I','U','HR','BLOCKQUOTE','DIV','SPAN','PRE','CODE']);
+  [...doc.body.querySelectorAll('*')].reverse().forEach(el=>{if(!allowed.has(el.tagName)){el.replaceWith(...el.childNodes);return;}[...el.attributes].forEach(a=>el.removeAttribute(a.name));});
+  return doc.body.innerHTML;
+}
+A.html2pdf={reset(){S.html2pdf.html='<h1>หัวข้อเอกสาร</h1>\n<p>พิมพ์หรือวางเนื้อหา HTML ที่นี่</p>';S.html2pdf.file=null;R();},print(){const safe=sanitizePrintHtml(S.html2pdf.html);if(!safe.trim())return toast('ไม่มีเนื้อหา HTML');const w=window.open('','_blank');if(!w)return toast('Browser บล็อก Pop-up กรุณาอนุญาต Pop-up ให้เว็บไซต์นี้');w.document.open();w.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>HTML to PDF</title><style>body{font-family:Arial,sans-serif;color:#222;margin:18mm;line-height:1.55}h1,h2,h3{color:#6F5F5E}table{border-collapse:collapse;width:100%}td,th{border:1px solid #aaa;padding:6px;text-align:left}blockquote{border-left:4px solid #FFD400;padding-left:12px;color:#555}pre{white-space:pre-wrap} @page{size:A4;margin:18mm}</style></head><body>${safe}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),350);}};
+
+/* ===== Shared status, favorites and home shortcuts ===== */
+V.home=()=>{
+  const fav=[...HRDH_FAVS].filter(id=>T[id]);
+  return `<section class="hero"><span class="badge">Local Document Processing · No AI API</span><h1 class="h1x">HR Document Hub</h1><p class="sub">พื้นที่ทำงานสำหรับเตรียมเอกสาร จัดการ PDF และงานเอกสารสรรหาบุคลากร</p></section>
+  <label class="drop big" data-tool="smart"><b>ลากไฟล์มาวางที่นี่ หรือแตะเพื่อเลือก</b><span>ระบบจะแนะนำเครื่องมือที่เหมาะกับไฟล์ของคุณ · ${privacy}</span><input type="file" multiple data-tool="smart"></label>
+  ${HOME.files.length?`<div class="card"><b>${HOME.files.length} ไฟล์:</b> ${esc(HOME.files.slice(0,5).map(f=>f.name).join(', '))}${HOME.files.length>5?' ...':''}<div class="row">${sg().map(([t,l])=>`<button class="btn" data-sg="${t}">${l}</button>`).join('')}</div></div>`:''}
+  ${fav.length?`<h2>รายการโปรด</h2><div class="grid">${fav.map(card).join('')}</div>`:''}<h2>งานที่ทำบ่อย</h2><div class="grid">${TASKS.map(([id,n,d,ic])=>`<button class="task" data-go="${id}"><i>${ic}</i><b>${n}</b><span>${d}</span></button>`).join('')}</div><p class="mt">กด ☆ บนการ์ดเครื่องมือเพื่อเพิ่มในรายการโปรด · ตั้งค่าธีมจะถูกจำไว้ใน Browser แต่ไฟล์เอกสารไม่ถูกบันทึกถาวร</p>`;
+};
+V.roadmap=()=>`<h1>แผนงาน Phase 4 & 5</h1><p class="sub">สถานะความสามารถ ณ รุ่น Local Document Processing</p><h2>Phase 4 · Document Interaction & OCR</h2><div class="grid">${Object.entries(T).filter(([k,t])=>['sign','fill','redact','forms','ocr','scanner'].includes(k)).map(([k,t])=>card(k)).join('')}</div><div class="note">เครื่องมือพร้อมใช้งานตามขอบเขตที่ระบุในคำอธิบายแต่ละรายการ · OCR ใช้ CDN สำหรับ Engine/Language Data · Document Scanner ต้องใช้ HTTPS และยังไม่มี Perspective Correction อัตโนมัติ</div><h2>Phase 5 · Advanced Editing & Conversion</h2><div class="grid">${Object.entries(T).filter(([k,t])=>['edit','pdf2word','html2pdf','word2pdf','office2pdf'].includes(k)).map(([k,t])=>card(k)).join('')}</div><div class="note">Edit PDF, PDF to DOCX (Text Only) และ HTML to PDF พร้อมใช้งานในขอบเขตที่ระบุ · Word/Excel/PowerPoint to PDF ยังเป็น Future Plan เพราะต้องใช้ Office/LibreOffice Engine</div><h2>Future Plan เพิ่มเติม</h2><ul><li>ตรวจจับขอบกระดาษและแก้ Perspective อัตโนมัติสำหรับ Document Scanner</li><li>OCR ส่งออกเป็น Searchable PDF พร้อม Text Layer</li><li>แปลง Word/Excel/PowerPoint ด้วย Office Engine ที่องค์กรอนุมัติ</li><li>PDF to Office แบบรักษา Layout ตารางและรูปภาพ</li><li>ฝังฟอนต์ Unicode สำหรับฟิลด์ PDF ภาษาไทย</li><li>ย้ายไลบรารีและ OCR Language Data ไปโฮสต์ภายในองค์กร เพื่อใช้งานแบบ No-CDN</li></ul>`;
+
+// Update shortcuts to surface local document processing and recruitment use cases.
+TASKS.splice(0,TASKS.length,
+  ['checker','เตรียมไฟล์เข้า Automation','ตรวจชื่อ ขนาด โครงสร้าง แล้วแก้ในครั้งเดียว',IC("<rect x='4' y='3' width='16' height='18' rx='2'/><path d='M9 12l2 2 4-4'/>")],
+  ['aiMatcher','จับคู่ JD กับ CV','Local keyword matching หลาย CV ต่อ JD',IC("<circle cx='10' cy='8' r='5'/><path d='M2 21a8 8 0 0 1 16 0M18 8h4M20 6v4'/>")],
+  ['ocr','OCR PDF สแกน','อ่านข้อความจากเอกสารสแกนใน Browser',IC("<path d='M4 4h16v16H4zM8 9h8M8 13h8M8 17h5'/>")],
+  ['forms','สร้าง PDF Form','เพิ่มช่องกรอกข้อมูล Checkbox และ Dropdown',IC("<rect x='4' y='3' width='16' height='18' rx='2'/><path d='M8 8h8M8 12h5M8 16h8'/>")],
+  ['edit','แก้ไข PDF','วางข้อความ รูปภาพ และไฮไลต์',IC("<path d='M12 20h9'/><path d='M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z'/>")]
+);
+
+TASKS.splice(2,0,['scanner','สแกนเอกสารด้วยกล้อง','ถ่ายหลายหน้า ปรับสี/ขาวดำ และสร้าง PDF',IC("<rect x='3' y='4' width='18' height='16' rx='2'/><circle cx='12' cy='12' r='3'/><path d='M8 4l1-2h6l1 2'/>")]);
+
+// Add the Local CV Matcher as a direct main tab using the exact same view key as the HR category card.
+NAV.splice(Math.max(0,NAV.length-1),0,['aiMatcher','AI CV Matcher']);
+// Remove older duplicate entries, if any, and ensure the route ID is consistent.
+for(let i=NAV.length-1;i>=0;i--){if(NAV[i][0]==='ai-matcher')NAV.splice(i,1);}
+
+// Existing preview renderer already displays text, image and highlight overlays.
+
+
+/* ===== Help Center: descriptions and first-use instructions for every tool ===== */
+const TOOL_GUIDE = {
+  checker:{purpose:'ตรวจสอบความพร้อมของไฟล์ก่อนนำเข้า Workflow หรือ Automation โดยเช็กชนิดไฟล์ ชื่อไฟล์ ขนาด และโครงสร้าง PDF เบื้องต้น',steps:['เลือกไฟล์ที่ต้องการตรวจได้หลายไฟล์','กำหนดขนาดสูงสุด กฎชื่อไฟล์ และวิธีแก้ที่ต้องการ','อ่านผลตรวจทีละไฟล์ กดแก้เฉพาะไฟล์ที่ระบบแนะนำ แล้วตรวจซ้ำ','ดาวน์โหลดไฟล์ที่พร้อมใช้งานหรือ ZIP รวมไฟล์'],limit:'การตรวจ Metadata และโครงสร้างเป็นการตรวจเบื้องต้น ไม่รับประกันว่าไฟล์จะผ่านทุกระบบปลายทาง และการแปลงเป็นภาพทำให้เลือก/ค้นหาข้อความไม่ได้'},
+  img2pdf:{purpose:'รวมรูปภาพหลายรูปให้เป็นเอกสาร PDF เหมาะกับรูปถ่ายเอกสาร ใบเสร็จ หรือเอกสารประกอบผู้สมัคร',steps:['เลือกรูป JPG, PNG หรือ WebP หลายรูป','จัดลำดับรูป ปรับขนาดกระดาษ แนวหน้า ระยะขอบ และคุณภาพ','เลือกรวมเป็น PDF เดียวหรือแยก PDF ต่อรูป','กดสร้าง PDF และดาวน์โหลด'],limit:'ภาพที่ถูกบีบอัดเป็น JPEG อาจสูญเสียรายละเอียดเล็กน้อย ควรเลือกคุณภาพสูงเมื่อต้องอ่านตัวเลขหรือเอกสารสำคัญ'},
+  merge:{purpose:'รวม PDF หลายไฟล์ให้เป็น PDF เดียว พร้อมกำหนดลำดับหน้า/ไฟล์ก่อนรวม',steps:['เลือก PDF ตั้งแต่ 2 ไฟล์ขึ้นไป','ใช้ปุ่มเลื่อนขึ้น/ลงจัดลำดับ','ตั้งชื่อไฟล์ผลลัพธ์','กดรวมไฟล์และดาวน์โหลด'],limit:'ไฟล์ที่มีรหัสผ่านหรือโครงสร้างผิดปกติอาจรวมไม่สำเร็จ และการรวมอาจไม่คงลายเซ็นดิจิทัลเดิม'},
+  split:{purpose:'แยก PDF เป็นไฟล์ย่อยตามช่วงหน้า แยกทีละหน้า หรือแบ่งเป็นกลุ่มจำนวนหน้า',steps:['เลือก PDF หนึ่งไฟล์','เลือกรูปแบบการแยก','กรอกช่วงหน้า เช่น 1-3, 5-7 หรือจำนวนหน้าต่อกลุ่ม','กดแยกไฟล์ ระบบจะดาวน์โหลด PDF หรือ ZIP'],limit:'ตรวจช่วงหน้าก่อนส่งออก โดยเฉพาะเอกสารที่มีข้อมูลส่วนบุคคล'},
+  organize:{purpose:'จัดเรียงหน้า หมุนหน้า และลบหน้าที่ไม่ต้องการออกจาก PDF',steps:['เลือก PDF','ใช้ภาพตัวอย่างเพื่อดูหน้าเอกสาร','เลื่อนหน้า หมุน หรือกดลบ/คืนหน้า','ตรวจจำนวนหน้าคงเหลือ แล้วส่งออก PDF'],limit:'ระบบสร้างไฟล์ใหม่จากหน้าที่เลือก คุณสมบัติบางอย่าง เช่น ลายเซ็นดิจิทัล ฟอร์ม หรือบุ๊กมาร์ก อาจไม่คงอยู่'},
+  compress:{purpose:'ลดขนาด PDF เพื่อให้ส่งต่อหรืออัปโหลดไปยังระบบปลายทางได้ง่ายขึ้น',steps:['เลือก PDF','เลือกระดับ Standard, Balanced หรือ Strong','กำหนดขนาดเป้าหมายได้ในระดับที่รองรับ','กดบีบอัด ตรวจขนาดใหม่และดูผลก่อนดาวน์โหลด'],limit:'Balanced/Strong อาจแปลงหน้าเป็นภาพ ทำให้ข้อความค้นหาไม่ได้และคุณภาพลดลง ส่วน Standard อาจลดขนาดได้น้อย'},
+  protect:{purpose:'สร้าง PDF ที่ต้องใส่รหัสผ่านก่อนเปิดไฟล์',steps:['เลือก PDF','กำหนดและยืนยันรหัสผ่าน','เลือกสิทธิ์พิมพ์/คัดลอกและความละเอียด','สร้างไฟล์ แล้วทดลองเปิดด้วยรหัสผ่าน'],limit:'รุ่นนี้ใช้วิธีเข้ารหัสแบบเก่า RC4 และแปลงหน้าเป็นภาพ ไม่แนะนำสำหรับเอกสารลับหรือข้อมูลความเสี่ยงสูง ควรใช้เครื่องมือองค์กรที่รองรับ AES'},
+  unlock:{purpose:'สร้างสำเนา PDF จากไฟล์ที่มีรหัสผ่าน โดยผู้ใช้ต้องทราบรหัสผ่านเดิม',steps:['เลือก PDF ที่มีรหัสผ่าน','กรอกรหัสผ่านที่ถูกต้อง','กดเริ่มปลดล็อก แล้วตรวจผลลัพธ์','เปิดไฟล์ที่ได้เพื่อตรวจความถูกต้อง'],limit:'ไม่ได้ถอดรหัสหรือข้ามรหัสผ่านโดยไม่ทราบรหัส ผลลัพธ์เป็น PDF แบบภาพ ทำให้ข้อความเลือก/ค้นหาไม่ได้'},
+  watermark:{purpose:'ใส่ลายน้ำข้อความ เช่น CONFIDENTIAL, DRAFT หรือ INTERNAL ลงบนหน้าที่เลือก',steps:['เลือก PDF และกรอกข้อความลายน้ำ','กำหนดสี ขนาด ความโปร่งใส มุมหมุน และตำแหน่ง','ระบุช่วงหน้าหรือเว้นว่างเพื่อใช้ทุกหน้า','สร้างและดาวน์โหลด PDF ใหม่'],limit:'ลายน้ำถูกฝังเป็นภาพบนหน้า ไม่ใช่ Text Layer และไม่ใช่เครื่องมือปกปิดข้อมูลอย่างปลอดภัย'},
+  pagenum:{purpose:'เพิ่มเลขหน้าให้เอกสาร เช่น Page 1 of 10 พร้อมกำหนดตำแหน่งและรูปแบบ',steps:['เลือก PDF','กำหนดคำนำหน้า/ต่อท้าย เลขเริ่มต้น และขนาดตัวอักษร','เลือกตำแหน่งบนหน้าและช่วงหน้า','สร้าง PDF ใหม่และตรวจตำแหน่งเลขหน้า'],limit:'เลขหน้าที่เพิ่มจะเป็นองค์ประกอบใหม่บนหน้าเดิม ควรตรวจว่าไม่ทับเนื้อหา'},
+  crop:{purpose:'ปรับพื้นที่แสดงผลของแต่ละหน้าด้วยระยะขอบบน ล่าง ซ้าย และขวา',steps:['เลือก PDF','กำหนดระยะตัดขอบเป็นมิลลิเมตร','ระบุช่วงหน้าหรือเว้นว่างเพื่อใช้ทุกหน้า','ส่งออกและตรวจผลใน PDF Reader'],limit:'การ Crop เปลี่ยนกรอบแสดงผลเท่านั้น ไม่ได้ลบข้อมูลที่อยู่นอกกรอบออกจากโครงสร้าง PDF จึงไม่ใช้แทน Redaction'},
+  repair:{purpose:'ลองสร้างโครงสร้าง PDF ใหม่เมื่อไฟล์เปิดหรือประมวลผลไม่ได้',steps:['เลือกไฟล์ PDF ที่มีปัญหา','กดเริ่มซ่อมไฟล์','ระบบลองสร้าง PDF ใหม่แบบเก็บข้อความก่อน และอาจใช้วิธีแปลงเป็นภาพเมื่อจำเป็น','เปิดไฟล์ผลลัพธ์และตรวจทุกหน้า'],limit:'ไม่สามารถกู้ไฟล์ที่เสียหายทุกชนิด และวิธีแปลงเป็นภาพอาจทำให้ Text Layer, Form, Link และลายเซ็นหายไป'},
+  pdf2img:{purpose:'แปลงแต่ละหน้าของ PDF เป็นไฟล์ JPG หรือ PNG สำหรับนำไปใช้ต่อ',steps:['เลือก PDF','เลือกรูปแบบภาพ ความละเอียด และช่วงหน้า','กดแปลง ระบบจะได้ภาพหนึ่งไฟล์ต่อหน้า','ดาวน์โหลดภาพหรือ ZIP'],limit:'ความละเอียดสูงใช้หน่วยความจำและพื้นที่มาก ไฟล์ที่มีหลายหน้าควรเริ่มจาก 150 DPI'},
+  jd:{purpose:'สร้างเอกสาร Job Description ตามข้อมูลตำแหน่งและรูปแบบเอกสารของทีม',steps:['กรอกชื่อตำแหน่งและข้อมูลทั่วไป','ระบุรายละเอียดงาน ความรับผิดชอบ คุณสมบัติ และทักษะ','ตรวจเนื้อหาและข้อมูลติดต่อ','สร้าง PDF และตรวจรูปแบบก่อนเผยแพร่'],limit:'ระบบเอกสาร HR ในรุ่นนี้เรนเดอร์จาก Canvas เป็นภาพใน PDF จึงอาจเลือก/ค้นหาข้อความไม่ได้ และระบบไม่ได้ยืนยันความถูกต้องหรืออนุมัติ JD แทนเจ้าของตำแหน่ง'},
+  interview:{purpose:'สร้างแบบประเมินสัมภาษณ์ที่ใช้บันทึกคะแนนและความคิดเห็นของผู้สัมภาษณ์',steps:['กรอกตำแหน่ง ผู้สมัคร และผู้สัมภาษณ์','กำหนดหัวข้อประเมินตามเกณฑ์งาน','สร้างแบบฟอร์ม PDF','พิมพ์หรือใช้เป็นแบบฟอร์มสำหรับการสัมภาษณ์'],limit:'เอกสารเป็นภาพใน PDF จึงอาจเลือก/ค้นหาข้อความไม่ได้ และควรกำหนดเกณฑ์ที่เกี่ยวข้องกับงานและใช้มาตรฐานเดียวกันกับผู้สมัครทุกคน'},
+  invite:{purpose:'สร้างจดหมายเชิญสัมภาษณ์ภาษาไทยหรือภาษาอังกฤษ',steps:['เลือกภาษาและกรอกชื่อผู้สมัคร/ตำแหน่ง','กรอกวัน เวลา รูปแบบ และสถานที่หรือลิงก์ที่ได้รับอนุมัติ','ตรวจข้อมูลติดต่อและรายละเอียดนัดหมาย','สร้าง PDF แล้วตรวจอีกครั้งก่อนส่ง'],limit:'ตรวจวัน เวลา Time Zone และลิงก์ประชุมก่อนส่งทุกครั้ง; PDF ที่สร้างเป็นภาพและข้อความอาจค้นหาไม่ได้'},
+  offer:{purpose:'สร้างเอกสาร Offer Letter จากข้อมูลและเงื่อนไขที่องค์กรอนุมัติ',steps:['กรอกผู้รับข้อเสนอ ตำแหน่ง และวันเริ่มงาน','ระบุค่าตอบแทนและเงื่อนไขที่ได้รับอนุมัติ','ตรวจสอบรายละเอียดกับผู้มีอำนาจอนุมัติ','สร้าง PDF หลังผ่านการตรวจแล้ว'],limit:'เป็นเทมเพลต ไม่ใช่คำแนะนำทางกฎหมาย ต้องผ่าน HR/Legal และกระบวนการอนุมัติขององค์กร; PDF เรนเดอร์เป็นภาพและอาจค้นหาข้อความไม่ได้'},
+  req:{purpose:'สร้าง Recruitment Requisition สำหรับขออนุมัติอัตรากำลัง',steps:['กรอกข้อมูลตำแหน่ง ฝ่าย และเหตุผลการขออัตรา','ระบุจำนวนอัตรา งบประมาณ และผู้อนุมัติตามกระบวนการ','ตรวจความครบถ้วน','สร้าง PDF เพื่อส่งตาม Workflow ภายใน'],limit:'PDF เรนเดอร์เป็นภาพและอาจค้นหาข้อความไม่ได้; การสร้างไฟล์ไม่ได้ส่งคำขอเข้าระบบอนุมัติจริง และไม่แทนการอนุมัติจากผู้มีอำนาจ'},
+  pack:{purpose:'รวมเอกสาร PDF ของผู้สมัครคนเดียวให้เป็น Candidate Document Pack',steps:['เลือก PDF ที่เป็นเอกสารของผู้สมัครรายเดียวกัน','เรียงลำดับเอกสาร เช่น CV, ใบสมัคร และเอกสารประกอบ','ตั้งชื่อ Pack ให้เป็นรหัสหรือชื่อที่องค์กรอนุญาต','รวมไฟล์และตรวจทุกหน้า'],limit:'เครื่องมือนี้รวมไฟล์ ไม่ได้ตรวจว่าเอกสารแต่ละชิ้นเป็นของบุคคลเดียวกัน ต้องตรวจชื่อ/รหัสผู้สมัครก่อนรวม'},
+  presend:{purpose:'ตรวจเอกสารก่อนส่งผู้สมัคร โดยค้นหาคำที่ต้องระวัง หน้าที่อาจว่าง และ Metadata เบื้องต้น',steps:['เลือก PDF','แก้รายการคำต้องระวังให้ตรงกับเอกสาร','กดตรวจและอ่านผลทุกหมวด','หากล้าง Metadata ให้ดาวน์โหลดสำเนาใหม่และตรวจซ้ำ'],limit:'การค้นคำไม่สามารถตรวจพบข้อมูลที่เป็นภาพหรือข้อมูลทุกชนิดได้ และการล้าง Metadata อาจทำให้ลายเซ็นดิจิทัลเดิมใช้ไม่ได้'},
+  lots:{purpose:'จัดกลุ่ม PDF ของผู้สมัครหลายคนจาก Prefix ในชื่อไฟล์ แล้วรวมเป็น ZIP แยกต่อคน',steps:['ตั้งชื่อไฟล์ให้มีรหัสผู้สมัครเป็นส่วนหน้าก่อนตัวคั่น เช่น A001_CV.pdf','อัปโหลด PDF หลายไฟล์และกำหนดตัวคั่น','ตรวจกลุ่มและรายการไฟล์ของแต่ละคน','สร้าง ZIP แล้วตรวจ Pack ทุกชุด'],limit:'ระบบอาศัยชื่อไฟล์ ไม่ได้ใช้ AI ยืนยันตัวตนหรือความเป็นเจ้าของเอกสาร หลีกเลี่ยงชื่อจริงเมื่อใช้รหัสผู้สมัครแทนได้'},
+  recipe:{purpose:'สร้างสูตรงานที่ทำซ้ำได้ เช่น แปลงรูปเป็น PDF ใส่เลขหน้า บีบอัด และตั้งชื่อไฟล์',steps:['เลือกไฟล์ PDF และ/หรือรูปภาพ','เลือกขั้นตอนที่ต้องการและกำหนดขนาดเป้าหมาย/รูปแบบชื่อ','กดรันสูตรและอ่าน Log','บันทึกสูตรเป็น JSON เพื่อแชร์ให้ทีม หรือโหลดสูตรเดิมมาใช้'],limit:'Recipe ทำงานตามลำดับที่กำหนด ไม่ได้ตรวจเนื้อหาเชิงความหมาย และควรตรวจผลลัพธ์ทุกไฟล์ก่อนส่งต่อ'},
+  compare:{purpose:'เปรียบเทียบข้อความใน PDF สองฉบับ เพื่อดูบรรทัดที่เพิ่มและลบ',steps:['เลือกไฟล์ A เป็นฉบับเดิม','เลือกไฟล์ B เป็นฉบับใหม่','กดเปรียบเทียบและตรวจบรรทัดที่เพิ่ม/ลบ','ตรวจเอกสารต้นฉบับหากเป็นการเปลี่ยนรูปแบบหรือ Layout'],limit:'เป็นการเปรียบเทียบ Text Layer ไม่ใช่การเทียบภาพ หากไฟล์เป็นสแกนหรือมีการจัดหน้าใหม่ ผลอาจไม่ครบถ้วน'},
+  sign:{purpose:'วางภาพลายเซ็นหรือข้อความลงบน PDF เพื่อให้เห็นลายเซ็นบนเอกสาร',steps:['เลือก PDF','วาด พิมพ์ หรืออัปโหลดภาพลายเซ็น','เลือกหน้าและวางตำแหน่ง/ขนาด','บันทึกสำเนา PDF ใหม่'],limit:'เป็นลายเซ็นแบบภาพ ไม่ใช่ Digital Signature ที่ยืนยันตัวบุคคลหรือตรวจสอบความสมบูรณ์ของเอกสาร และไม่ใช่การรับรองความถูกต้องตามกฎหมาย'},
+  fill:{purpose:'กรอกข้อมูลลงในฟิลด์ AcroForm ที่มีอยู่ใน PDF',steps:['เลือก PDF ที่มีฟิลด์ฟอร์ม','กรอก Text Field, Checkbox หรือ Dropdown ที่ระบบอ่านได้','เลือก Flatten หากต้องการทำให้ข้อมูลแสดงคงที่','บันทึก PDF ใหม่และตรวจใน PDF Reader'],limit:'ไม่รองรับ XFA และบางฟอนต์/ฟิลด์ภาษาไทยอาจแสดงผลไม่ถูกต้อง หากไม่พบฟิลด์ให้ใช้ Edit PDF หรือ Sign PDF เพิ่มข้อความทับ'},
+  redact:{purpose:'ปิดบังข้อมูลที่ไม่ต้องการแสดง โดยแปลงหน้าที่มีการปิดข้อมูลเป็นภาพแล้ววาดแถบปิดทับ',steps:['เลือก PDF และไปยังหน้าที่มีข้อมูลอ่อนไหว','ลากสร้างกรอบปิดข้อมูลในตำแหน่งที่ต้องการ','ตรวจกรอบทุกตำแหน่งและทุกหน้า','สร้างไฟล์ใหม่ แล้วทดลองค้นหา/คัดลอกข้อความและตรวจ Metadata ก่อนเผยแพร่'],limit:'รุ่นนี้แปลงเฉพาะหน้าที่มีกรอบ และอาจยังมีข้อมูลใน Metadata, ไฟล์แนบ, Bookmark หรือหน้าอื่น ห้ามใช้กับข้อมูลลับจนกว่าจะผ่านการตรวจ Redaction อย่างครบถ้วน'},
+  forms:{purpose:'สร้างฟิลด์ AcroForm ใหม่ เช่น ช่องข้อความ Checkbox และ Dropdown ลงบน PDF',steps:['เลือก PDF ต้นฉบับ','เลือกชนิดฟิลด์ ตั้งชื่อและขนาด','กดวางฟิลด์ แล้วคลิกตำแหน่งบนภาพตัวอย่าง','เพิ่มฟิลด์อื่น ๆ แล้วกดสร้าง PDF Form','เปิดไฟล์ใน PDF Reader เพื่อทดสอบการกรอก'],limit:'รุ่นนี้ใช้ฟอนต์มาตรฐานสำหรับ Appearance; แนะนำให้ชื่อ Field และตัวเลือกใช้ ASCII/อังกฤษ จนกว่าจะเพิ่มฟอนต์ Unicode'},
+  aiMatcher:{purpose:'จับคู่คำสำคัญที่ HR กำหนดใน JD กับข้อความจาก CV หลายคนใน Browser เพื่อช่วยค้นหลักฐานเบื้องต้น',steps:['เลือก JD PDF ที่มี Text Layer, DOCX หรือ TXT','เพิ่ม CV PDF/DOCX/TXT ได้สูงสุด 15 ไฟล์','กำหนดเกณฑ์ในรูปแบบ ชื่อเกณฑ์ | น้ำหนัก | คำค้น และให้น้ำหนักรวม 100%','กด Analyze แล้วอ่านคะแนน คำค้นที่พบ ข้อความตัวอย่าง และคำถามติดตาม','ตรวจ CV จริงด้วยตนเองก่อนสรุป'],limit:'นี่คือ Rule-based Keyword Matching ไม่ใช่ AI Model หรือการประเมินความสามารถ คะแนนไม่ใช่คะแนนความเหมาะสม ไม่จัดอันดับและห้ามใช้ตัดผู้สมัครโดยอัตโนมัติ'},
+  ocr:{purpose:'อ่านข้อความจาก PDF ที่เป็นภาพสแกนด้วย OCR แล้วส่งออกเป็น TXT',steps:['เลือก PDF สแกน (ไม่เกิน 10 หน้าและ 15 MB)','เลือกภาษาไทย+อังกฤษ อังกฤษ หรือไทย','กดเริ่ม OCR และรอผลทีละหน้า','ตรวจแก้ข้อความที่อ่านผิด แล้วดาวน์โหลด TXT'],limit:'อาจอ่านภาษาไทย ตัวเลข และตารางผิดพลาด ผลลัพธ์เป็น TXT ไม่ใช่ Searchable PDF; OCR Engine และ Language Data ดาวน์โหลดจาก CDN ในครั้งแรก'},
+  edit:{purpose:'เพิ่มข้อความ รูปภาพ หรือไฮไลต์ทับลงบนหน้า PDF',steps:['เลือก PDF','กรอกข้อความหรือเลือกรูป แล้วเลือกเครื่องมือที่ต้องการ','คลิกตำแหน่งบนหน้า Preview เพื่อวางองค์ประกอบ','ตรวจตำแหน่งและกดบันทึก PDF ใหม่'],limit:'เป็น Overlay ไม่ได้แก้ข้อความเดิมใน PDF ข้อความที่เพิ่มเป็นภาพ PNG รองรับภาษาไทยแต่เลือก/ค้นหาไม่ได้'},
+  pdf2word:{purpose:'ดึงข้อความที่เลือกได้จาก PDF แล้วสร้างไฟล์ DOCX แบบข้อความเรียบง่าย',steps:['เลือก PDF ที่มี Text Layer','ตรวจข้อความที่ดึงได้และแก้ไขในช่องข้อความ','กดส่งออก DOCX','เปิดไฟล์ Word เพื่อตรวจและจัดรูปแบบต่อ'],limit:'ไม่รักษา Layout ตาราง รูปภาพ คอลัมน์ หรือรูปแบบเดิม หากเป็น PDF สแกนให้ใช้ OCR PDF to Text ก่อน'},
+  html2pdf:{purpose:'พิมพ์เนื้อหา HTML ที่ผ่านการกรองเป็น PDF ผ่าน Print ของ Browser',steps:['เลือกไฟล์ HTML หรือพิมพ์/วาง HTML พื้นฐาน','ตรวจเนื้อหาในช่องแก้ไข','กดเปิดหน้าพิมพ์ แล้วเลือก Save as PDF ใน Browser','ตรวจขนาดกระดาษและ Margin ก่อนบันทึก'],limit:'ระบบตัด Script, Style, iframe, object, form, image และองค์ประกอบที่ไม่อนุญาตออก ไม่ใช่ HTML renderer ที่รองรับเว็บเต็มรูปแบบ'},
+  word2pdf:{purpose:'แปลง Word เป็น PDF โดยรักษารูปแบบเอกสารด้วย Office/LibreOffice Engine',steps:['Future Plan: เลือกเอนจินแปลงเอกสารที่องค์กรอนุมัติ','ติดตั้ง/โฮสต์เอนจินในสภาพแวดล้อมที่ควบคุมได้','ทดสอบฟอนต์ไทย ตาราง Header/Footer และรูปภาพ'],limit:'ยังไม่เปิดใช้งานในรุ่นนี้'},
+  office2pdf:{purpose:'แปลง Excel และ PowerPoint เป็น PDF โดยรักษาหน้ากระดาษและ Layout',steps:['Future Plan: เชื่อม Office/LibreOffice Engine','กำหนดการจัดหน้ากระดาษ Sheet/Slide','ทดสอบ Print Area, Scaling, Fonts และ Charts'],limit:'ยังไม่เปิดใช้งานในรุ่นนี้'},
+  scanner:{purpose:'ใช้กล้องมือถือหรือเว็บแคมถ่ายเอกสารหลายหน้า ปรับภาพให้ดูคล้ายเอกสารสแกน และรวมเป็น PDF ใน Browser',steps:['เปิดกล้องและอนุญาตสิทธิ์ หรือเลือกรูป JPG/PNG/WebP จากอุปกรณ์ (ไม่เกิน 10 MB ต่อรูป)','ถ่ายทีละหน้า เพิ่ม/ลบ/สลับลำดับหน้าได้ สูงสุด 20 หน้า','เลือกโหมดสีต้นฉบับ, สีปรับชัด, Grayscale, Black & White, Clean, Photocopy หรือ Soft Scan','ปรับการตัดขอบบน/ล่าง/ซ้าย/ขวาเป็นเปอร์เซ็นต์ และหมุนหน้าได้ครั้งละ 90 องศา','เลือกขนาดกระดาษ A4/Letter และคุณภาพ สูง/มาตรฐาน/ไฟล์เล็ก แล้วสร้าง PDF'],limit:'กล้องต้องใช้งานผ่าน HTTPS หรือ localhost และต้องอนุญาตสิทธิ์กล้อง; รุ่นนี้ยังไม่มีการตรวจขอบกระดาษ/แก้ Perspective อัตโนมัติ การครอปเป็นการตัดขอบแบบกำหนดเอง และควรตรวจความอ่านได้ก่อนบันทึก'}
+};
+function toolHelpHtml(id){
+  const g=TOOL_GUIDE[id]; if(!g)return '';
+  return `<section class="tool-help"><div class="help-title">เกี่ยวกับเครื่องมือนี้</div><p class="help-purpose">${esc(g.purpose)}</p><div class="help-title">วิธีใช้งานเบื้องต้น</div><ol>${g.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol><div class="help-limit"><b>ข้อจำกัด / ข้อควรระวัง:</b> ${esc(g.limit)}</div></section>`;
+}
+
+/* ===== Document Scanner: local camera capture + scan-style filters ===== */
+T.scanner={n:'Document Scanner',d:'ถ่ายเอกสารหลายหน้า ปรับสี/ขาวดำ และบันทึกเป็น PDF ใน Browser',c:'conv',p:0};
+S.scanner={stream:null,cameraOn:false,facing:'environment',pages:[],selected:0,defaultFilter:'clean',pageSize:'a4',quality:'high',name:'scanned_document.pdf',busy:false,previewUrl:''};
+function stopScannerStream(render=true){
+  const C=S.scanner;if(C.stream){C.stream.getTracks().forEach(t=>t.stop());C.stream=null;}
+  C.cameraOn=false;if(render&&cur==='scanner')R();
+}
+function syncScannerVideo(){
+  const C=S.scanner,v=$('#scannerVideo');
+  if(v&&C.stream&&v.srcObject!==C.stream){v.srcObject=C.stream;v.play().catch(()=>{});}
+}
+function loadScanImage(dataUrl){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('เปิดรูปภาพไม่สำเร็จ'));im.src=dataUrl;});}
+function otsuLevel(hist,total){
+  let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];
+  let sumB=0,wB=0,max=0,threshold=170;
+  for(let i=0;i<256;i++){wB+=hist[i];if(!wB)continue;const wF=total-wB;if(!wF)break;sumB+=i*hist[i];const mB=sumB/wB,mF=(sum-sumB)/wF,between=wB*wF*(mB-mF)*(mB-mF);if(between>max){max=between;threshold=i;}}
+  return threshold;
+}
+async function processScanPage(page,maxSide=2400){
+  const im=await loadScanImage(page.dataUrl),W=im.naturalWidth||im.width,H=im.naturalHeight||im.height;
+  const top=Math.max(0,Math.min(40,+page.cropTop||0))/100,left=Math.max(0,Math.min(40,+page.cropLeft||0))/100,bottom=Math.max(0,Math.min(40,+page.cropBottom||0))/100,right=Math.max(0,Math.min(40,+page.cropRight||0))/100;
+  const sx=Math.round(W*left),sy=Math.round(H*top),sw=Math.max(1,Math.round(W*(1-left-right))),sh=Math.max(1,Math.round(H*(1-top-bottom)));
+  const scale=Math.min(1,maxSide/Math.max(sw,sh)),cw=Math.max(1,Math.round(sw*scale)),ch=Math.max(1,Math.round(sh*scale));
+  const crop=document.createElement('canvas');crop.width=cw;crop.height=ch;crop.getContext('2d').drawImage(im,sx,sy,sw,sh,0,0,cw,ch);
+  const rot=((+page.rotate||0)%360+360)%360,canvas=document.createElement('canvas');
+  if(rot===90||rot===270){canvas.width=ch;canvas.height=cw;}else{canvas.width=cw;canvas.height=ch;}
+  const ctx=canvas.getContext('2d');ctx.translate(canvas.width/2,canvas.height/2);ctx.rotate(rot*Math.PI/180);ctx.drawImage(crop,-cw/2,-ch/2);
+  const filter=page.filter||'clean';
+  if(filter!=='original'){
+    const image=ctx.getImageData(0,0,canvas.width,canvas.height),d=image.data,hist=new Uint32Array(256),len=d.length/4;
+    for(let i=0;i<d.length;i+=4){const y=Math.max(0,Math.min(255,Math.round(.299*d[i]+.587*d[i+1]+.114*d[i+2])));hist[y]++;}
+    const otsu=otsuLevel(hist,len);
+    let threshold=otsu;
+    if(filter==='clean')threshold=Math.min(225,Math.max(155,otsu+8));
+    if(filter==='photocopy')threshold=Math.min(220,Math.max(175,otsu+18));
+    for(let i=0;i<d.length;i+=4){
+      let r=d[i],g=d[i+1],b=d[i+2],gray=.299*r+.587*g+.114*b;
+      if(filter==='gray'||filter==='soft'){
+        const contrast=filter==='soft'?1.12:1.04,bright=filter==='soft'?7:0;gray=Math.max(0,Math.min(255,(gray-128)*contrast+128+bright));r=g=b=gray;
+      }else if(filter==='bw'||filter==='clean'||filter==='photocopy'){
+        const v=gray>=threshold?255:0;r=g=b=v;
+      }else if(filter==='enhance'){
+        const avg=(r+g+b)/3,contrast=1.12,sat=1.16;
+        r=Math.max(0,Math.min(255,((avg+(r-avg)*sat)-128)*contrast+132));
+        g=Math.max(0,Math.min(255,((avg+(g-avg)*sat)-128)*contrast+132));
+        b=Math.max(0,Math.min(255,((avg+(b-avg)*sat)-128)*contrast+132));
+      }
+      d[i]=r;d[i+1]=g;d[i+2]=b;
+    }
+    ctx.putImageData(image,0,0);
+  }
+  const q=page.quality==='small'?.70:page.quality==='standard'?.84:.92;
+  const url=canvas.toDataURL('image/jpeg',q);crop.width=crop.height=canvas.width=canvas.height=0;return url;
+}
+async function refreshScannerPreview(){
+  const C=S.scanner,p=C.pages[C.selected];if(!p){C.previewUrl='';return;}
+  try{C.previewUrl=await processScanPage(p,1500);}catch(e){C.previewUrl=p.dataUrl;toast(e.message||'สร้างภาพตัวอย่างไม่สำเร็จ');}
+}
+function scanPageFromData(dataUrl,name){
+  const C=S.scanner;if(C.pages.length>=20)throw Error('รุ่นนี้รองรับไม่เกิน 20 หน้า');
+  C.pages.push({dataUrl,name:name||'Page '+(C.pages.length+1),filter:C.defaultFilter,quality:C.quality,rotate:0,cropTop:0,cropRight:0,cropBottom:0,cropLeft:0});
+  C.selected=C.pages.length-1;
+}
+V.scanner=()=>{
+  const C=S.scanner,p=C.pages[C.selected];
+  return `<h1>Document Scanner</h1><p class="sub">ถ่ายเอกสารหลายหน้า ปรับภาพ และสร้าง PDF ภายใน Browser</p>
+  <div class="note">ต้องเปิดเว็บไซต์ผ่าน HTTPS และอนุญาตใช้กล้อง · กล้องจะหยุดเมื่อออกจากหน้านี้ · ไฟล์ภาพและ PDF ทำงานใน Browser</div>
+  <div class="card"><div class="scanner-video-wrap"><video id="scannerVideo" playsinline autoplay muted ${C.cameraOn?'':'hidden'}></video>${C.cameraOn?'':'<span style="color:#fff;padding:20px;text-align:center">กด “เปิดกล้อง” หรือเลือกรูปเอกสารจากอุปกรณ์</span>'}</div>
+  <div class="row" style="margin-top:12px"><button class="btn" data-a="start" ${C.cameraOn?'disabled':''}>เปิดกล้อง</button><button class="btn g" data-a="capture" ${!C.cameraOn?'disabled':''}>ถ่ายภาพ</button><button class="btn g" data-a="switch" ${!C.cameraOn?'disabled':''}>สลับกล้อง</button><button class="btn g" data-a="stop" ${!C.cameraOn?'disabled':''}>ปิดกล้อง</button><label class="btn g">ถ่าย/เลือกรูปจากอุปกรณ์<input type="file" accept="image/*" capture="environment" multiple data-tool="scanner" style="display:none"></label></div>
+  <p class="mt">บนมือถือควรใช้กล้องหลัง · บนคอมพิวเตอร์จะใช้ Webcam ที่อนุญาตใน Browser</p></div>
+  <div class="card"><b>รูปแบบเอกสาร</b><div class="scan-controls" style="margin-top:10px"><label>โหมดเริ่มต้นสำหรับภาพใหม่<select data-k="defaultFilter"><option value="original" ${C.defaultFilter==='original'?'selected':''}>สีต้นฉบับ</option><option value="enhance" ${C.defaultFilter==='enhance'?'selected':''}>สีปรับชัด</option><option value="gray" ${C.defaultFilter==='gray'?'selected':''}>เทาระดับ (Grayscale)</option><option value="bw" ${C.defaultFilter==='bw'?'selected':''}>ขาวดำ (Black & White)</option><option value="clean" ${C.defaultFilter==='clean'?'selected':''}>เอกสารสแกน (Clean)</option><option value="photocopy" ${C.defaultFilter==='photocopy'?'selected':''}>ถ่ายเอกสารเข้ม (Photocopy)</option><option value="soft" ${C.defaultFilter==='soft'?'selected':''}>สแกนนุ่ม (Soft Scan)</option></select></label><label>ขนาด PDF<select data-k="pageSize"><option value="a4" ${C.pageSize==='a4'?'selected':''}>A4</option><option value="letter" ${C.pageSize==='letter'?'selected':''}>Letter</option></select></label><label>คุณภาพไฟล์<select data-k="quality"><option value="high" ${C.quality==='high'?'selected':''}>สูง</option><option value="standard" ${C.quality==='standard'?'selected':''}>มาตรฐาน</option><option value="small" ${C.quality==='small'?'selected':''}>ไฟล์เล็ก</option></select></label></div></div>
+  ${p?`<div class="card"><div class="top"><b>ปรับแต่งหน้า ${C.selected+1} / ${C.pages.length}</b><span class="pill ok">พร้อมประมวลผล</span></div><img class="scanner-preview" src="${C.previewUrl||p.dataUrl}" alt="ตัวอย่างเอกสารที่สแกน"><div class="scan-controls" style="margin-top:12px"><label>รูปแบบ<select data-scan-field="filter"><option value="original" ${p.filter==='original'?'selected':''}>สีต้นฉบับ</option><option value="enhance" ${p.filter==='enhance'?'selected':''}>สีปรับชัด</option><option value="gray" ${p.filter==='gray'?'selected':''}>เทาระดับ</option><option value="bw" ${p.filter==='bw'?'selected':''}>ขาวดำ</option><option value="clean" ${p.filter==='clean'?'selected':''}>เอกสารสแกน (Clean)</option><option value="photocopy" ${p.filter==='photocopy'?'selected':''}>ถ่ายเอกสารเข้ม</option><option value="soft" ${p.filter==='soft'?'selected':''}>สแกนนุ่ม</option></select></label><label>ตัดขอบบน (%)<input type="number" min="0" max="40" step="1" value="${p.cropTop}" data-scan-field="cropTop"></label><label>ตัดขอบขวา (%)<input type="number" min="0" max="40" step="1" value="${p.cropRight}" data-scan-field="cropRight"></label><label>ตัดขอบล่าง (%)<input type="number" min="0" max="40" step="1" value="${p.cropBottom}" data-scan-field="cropBottom"></label><label>ตัดขอบซ้าย (%)<input type="number" min="0" max="40" step="1" value="${p.cropLeft}" data-scan-field="cropLeft"></label></div><div class="row" style="margin-top:10px"><button class="btn g" data-a="rotate">หมุน 90°</button><button class="btn g" data-a="preview">อัปเดตตัวอย่าง</button><button class="btn g" data-a="remove" data-i="${C.selected}">ลบหน้านี้</button></div><p class="mt">การตัดขอบเป็นเปอร์เซ็นต์จากขอบภาพ ไม่ใช่การตรวจจับขอบกระดาษอัตโนมัติ</p></div>`:''}
+  ${C.pages.length?`<div class="card"><div class="top"><b>หน้าที่ถ่ายไว้ (${C.pages.length})</b><span class="mt">สูงสุด 20 หน้า</span></div>${C.pages.map((x,i)=>`<div class="scan-page ${i===C.selected?'selected':''}"><img class="scan-thumb" src="${x.dataUrl}" alt="หน้า ${i+1}"><div class="meta"><b>หน้า ${i+1}</b><span class="mt">${esc(x.name)} · ${esc(x.filter)}</span><div class="row"><button class="btn g sm" data-a="select" data-i="${i}">เลือก</button><button class="btn g sm" data-a="up" data-i="${i}" ${i===0?'disabled':''}>↑</button><button class="btn g sm" data-a="dn" data-i="${i===C.pages.length-1?'disabled':''}>↓</button><button class="btn g sm" data-a="remove" data-i="${i}">ลบ</button></div></div></div>`).join('')}<div class="row"><label>ชื่อไฟล์ PDF <input type="text" data-k="name" value="${esc(C.name)}"></label><button class="btn s" data-a="create" ${C.busy?'disabled':''}>สร้าง PDF (${C.pages.length} หน้า)</button><button class="btn g" data-a="clear" ${C.busy?'disabled':''}>ล้างทุกหน้า</button></div>${C.busy?prog():''}</div>`:''}`;
+};
+ADD.scanner=async files=>{
+  const C=S.scanner,valid=[...files].filter(f=>/^image\/(jpeg|png|webp)$/.test(f.type)&&f.size<=10*1048576);if(valid.length!==files.length)toast('รองรับ JPG/PNG/WebP ขนาดไม่เกิน 10 MB ต่อรูป');
+  for(const f of valid){if(C.pages.length>=20){toast('เพิ่มได้สูงสุด 20 หน้า');break;}const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(Error('อ่านไฟล์รูปไม่สำเร็จ'));r.readAsDataURL(f);});try{scanPageFromData(data,f.name);}catch(e){toast(e.message);break;}}
+  await refreshScannerPreview();R();
+};
+A.scanner={
+  async start(){const C=S.scanner;if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)return toast('กล้องต้องใช้ HTTPS และ Browser ที่รองรับ getUserMedia');try{stopScannerStream(false);const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:C.facing},width:{ideal:1920},height:{ideal:1080}}});C.stream=stream;C.cameraOn=true;R();syncScannerVideo();toast('เปิดกล้องแล้ว กรุณาจัดเอกสารให้อยู่ในกรอบภาพ');}catch(e){toast('เปิดกล้องไม่ได้: '+(e.name==='NotAllowedError'?'กรุณาอนุญาตสิทธิ์กล้อง':e.message||e.name));}},
+  stop(){stopScannerStream(true);},
+  async switch(){const C=S.scanner;C.facing=C.facing==='environment'?'user':'environment';await A.scanner.start();},
+  capture(){const C=S.scanner,v=$('#scannerVideo');if(!C.stream||!v||!v.videoWidth)return toast('กล้องยังไม่พร้อม กรุณารอสักครู่');const scale=Math.min(1,2500/Math.max(v.videoWidth,v.videoHeight)),c=document.createElement('canvas');c.width=Math.round(v.videoWidth*scale);c.height=Math.round(v.videoHeight*scale);const x=c.getContext('2d');x.drawImage(v,0,0,c.width,c.height);try{scanPageFromData(c.toDataURL('image/jpeg',.95),'Camera_'+String(C.pages.length+1).padStart(2,'0'));}catch(e){toast(e.message);return;}c.width=c.height=0;refreshScannerPreview().then(()=>R());toast('เพิ่มหน้าเอกสารแล้ว');},
+  select(t){S.scanner.selected=Number(t.dataset.i);refreshScannerPreview().then(()=>R());},
+  up(t){const C=S.scanner,i=Number(t.dataset.i);if(i>0){[C.pages[i-1],C.pages[i]]=[C.pages[i],C.pages[i-1]];C.selected=i-1;refreshScannerPreview().then(()=>R());}},
+  dn(t){const C=S.scanner,i=Number(t.dataset.i);if(i<C.pages.length-1){[C.pages[i+1],C.pages[i]]=[C.pages[i],C.pages[i+1]];C.selected=i+1;refreshScannerPreview().then(()=>R());}},
+  remove(t){const C=S.scanner,i=Number(t.dataset.i);C.pages.splice(i,1);C.selected=Math.max(0,Math.min(C.selected,C.pages.length-1));refreshScannerPreview().then(()=>R());},
+  rotate(){const C=S.scanner,p=C.pages[C.selected];if(!p)return;p.rotate=(p.rotate+90)%360;refreshScannerPreview().then(()=>R());},
+  preview(){refreshScannerPreview().then(()=>{R();toast('อัปเดตตัวอย่างแล้ว');});},
+  clear(){const C=S.scanner;stopScannerStream(false);C.pages=[];C.selected=0;C.previewUrl='';R();},
+  async create(){const C=S.scanner;if(!C.pages.length)return toast('กรุณาถ่ายหรือเลือกรูปอย่างน้อย 1 หน้า');await run(C,async()=>{let doc=null;for(let i=0;i<C.pages.length;i++){setMsg('กำลังประมวลผลหน้า '+(i+1)+'/'+C.pages.length);const data=await processScanPage(C.pages[i],2400),im=await loadScanImage(data),land=im.width>im.height,format=C.pageSize==='letter'?'letter':'a4',orient=land?'landscape':'portrait';if(!doc)doc=new jspdf.jsPDF({unit:'mm',format,orientation:orient,compress:true});else doc.addPage(format,orient);const pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight(),margin=5,scale=Math.min((pw-margin*2)/im.width,(ph-margin*2)/im.height),w=im.width*scale,h=im.height*scale;doc.addImage(data,'JPEG',(pw-w)/2,(ph-h)/2,w,h,undefined,'FAST');}
+    const name=(C.name||'scanned_document.pdf').trim().replace(/[\\/:*?"<>|\x00-\x1f]/g,'_');save(doc.output('blob'),/\.pdf$/i.test(name)?name:name+'.pdf');});}
+};
+document.addEventListener('change',async e=>{
+  const t=e.target;if(cur!=='scanner')return;
+  if(t.dataset.k==='quality'){S.scanner.pages.forEach(p=>p.quality=t.value);await refreshScannerPreview();R();return;}
+  if(t.dataset.scanField){const p=S.scanner.pages[S.scanner.selected];if(!p)return;const k=t.dataset.scanField;let v=t.type==='number'?Math.max(0,Math.min(40,Number(t.value)||0)):t.value;p[k]=v;await refreshScannerPreview();R();}
+});
+// Release camera tracks whenever the user navigates to another screen or triggers a global wipe.
+const _hrdhGo=go;go=function(v,a){if(cur==='scanner'&&v!=='scanner'&&typeof stopScannerStream==='function')stopScannerStream(false);return _hrdhGo(v,a);};
+const _hrdhWipe=wipe;wipe=function(){if(typeof stopScannerStream==='function')stopScannerStream(false);if(typeof AI_MATCH!=='undefined'){AI_MATCH.jdFile=null;AI_MATCH.jdText='';AI_MATCH.cvs=[];AI_MATCH.results=[];AI_MATCH.running=false;AI_MATCH.current=0;AI_MATCH.progressText='';}return _hrdhWipe();};
+
+/* ===== Tool descriptions injected into each tool page ===== */
+const _hrdhRender=R;R=function(){_hrdhRender();const guideId=cur==='planned'?arg:cur;if(TOOL_GUIDE[guideId]){const h=$('#main h1');if(h)h.insertAdjacentHTML('afterend',toolHelpHtml(guideId));}if(cur==='scanner')syncScannerVideo();};
 
 R();
 </script>

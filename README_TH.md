@@ -1,155 +1,94 @@
-# HR Document Hub — AI CV Matcher (Prototype)
+# HR Document Hub — Help Center + Document Scanner
 
-ชุดไฟล์นี้ต่อยอดจาก `index.html.html` ที่แนบมา โดยเพิ่มเมนู **AI CV Matcher** สำหรับเลือก JD 1 ไฟล์และ CV หลายไฟล์ เพื่อวิเคราะห์หลักฐานตามเกณฑ์งาน พร้อม Summary, Strengths, Missing Information และ Interview Suggestions
+เวอร์ชันนี้ต่อยอดจาก Local Document Processing โดยเพิ่มคำอธิบายและวิธีใช้งานเบื้องต้นในทุกหน้าเครื่องมือ เพิ่ม Document Scanner ที่ใช้กล้องหรือรูปภาพจากอุปกรณ์ และแก้ไขจุดที่ตรวจพบจากการตรวจ Source Code
 
-## ในชุดนี้มีอะไรบ้าง
+## สิ่งที่เพิ่มและปรับปรุง
 
-- `index.html` — หน้า HR Document Hub เดิมที่เพิ่มหน้า AI CV Matcher
-- `worker.js` — Cloudflare Worker ทำหน้าที่เป็น Backend และเรียก OpenAI Responses API
-- `wrangler.toml` — ค่าเริ่มต้นสำหรับ Deploy Worker
-- `README_TH.md` — คู่มือติดตั้งและข้อจำกัด
-- `tests/worker-smoke-test.mjs` — ทดสอบ Worker ด้วย Mock OpenAI response (ไม่เรียก API จริง)
+### 1. คำอธิบายทุก Function
 
-## Architecture
+เมื่อเปิดหน้าเครื่องมือ จะมีส่วน **เกี่ยวกับเครื่องมือนี้**, **วิธีใช้งานเบื้องต้น** และ **ข้อจำกัด / ข้อควรระวัง** อยู่ใต้ชื่อเครื่องมือ ส่วนเครื่องมือที่ยังไม่เปิดใช้งานจะแสดงสถานะ Future Plan พร้อมข้อเสนอขั้นตอนพัฒนา ไม่แสดงว่าเป็นฟังก์ชันพร้อมใช้งาน
 
-1. Browser อ่านข้อความจาก JD และ CV ด้วย PDF.js (PDF) และ JSZip (DOCX)
-2. ผู้ใช้ยืนยันก่อนส่งข้อความออกจาก Browser
-3. Browser ส่งข้อความ JD + CV ทีละคนไปยัง Cloudflare Worker
-4. Worker ตรวจ Access Code, ขนาดข้อมูล และเกณฑ์น้ำหนัก
-5. Worker เรียก OpenAI Responses API ด้วย `store: false` และ Structured Outputs (JSON Schema)
-6. Worker ส่ง JSON กลับ Browser โดยไม่เขียนข้อมูลลง Database หรือ Log
-7. Browser คำนวณ Evidence Match Score จากน้ำหนักที่ HR กำหนด และแสดงผลรายคน
+### 2. Document Scanner
 
-**Batch ใน Prototype นี้หมายถึงเลือก CV หลายไฟล์แล้วกดวิเคราะห์ครั้งเดียว แต่ระบบจะเรียก AI ทีละคนตามลำดับ** เพื่อลดปัญหา Rate Limit และแยกข้อผิดพลาดรายคนได้ง่าย
+- เปิดกล้องหลัง/กล้องหน้าในมือถือ หรือ Webcam บนคอมพิวเตอร์
+- เลือกรูป JPG, PNG หรือ WebP จากอุปกรณ์แทนการใช้กล้องได้
+- เพิ่มเอกสารได้สูงสุด **20 หน้า** และจำกัดรูปนำเข้าไว้ที่ **10 MB ต่อรูป**
+- เลือก Preset ได้ 7 แบบ: สีต้นฉบับ (Original), สีปรับชัด (Enhance), Grayscale, Black & White, Clean Document, Photocopy และ Soft Scan
+- ปรับขอบบน/ล่าง/ซ้าย/ขวาแบบกำหนดเปอร์เซ็นต์ได้ และหมุนภาพทีละ 90 องศา
+- เลือกขนาด PDF A4 หรือ Letter และคุณภาพไฟล์ สูง/มาตรฐาน/ไฟล์เล็ก
+- เรียงหน้า ลบหน้า และสร้าง PDF หลายหน้าใน Browser
+- หยุด Camera Tracks เมื่อออกจากหน้า Scanner หรือกดล้างข้อมูล
 
-## 1. เตรียม OpenAI API Key
+**วิธีใช้งาน:** เปิด Document Scanner → กดเปิดกล้องและอนุญาตสิทธิ์ หรือเลือกรูปจากอุปกรณ์ → ถ่าย/เพิ่มหน้าจนครบ → เลือกหน้าเพื่อปรับ Preset/ขอบ/การหมุน → จัดลำดับหน้า → เลือกขนาดและคุณภาพ → กดสร้าง PDF → เปิดไฟล์ PDF ที่ได้เพื่อตรวจทุกหน้า
 
-1. สร้าง API Key ใน OpenAI Platform Project ที่องค์กรอนุมัติ
-2. ตรวจสอบ Billing / Project limits ก่อนทดลอง เพราะการวิเคราะห์ CV แต่ละไฟล์มีค่าใช้จ่ายตาม Token ที่ใช้
-3. ห้ามนำ API Key ไปใส่ใน `index.html`, JavaScript ฝั่ง Browser, GitHub Repository หรือช่อง Shared Access Code
+**ข้อจำกัด:**
+- การใช้กล้องต้องเปิดเว็บผ่าน HTTPS หรือ localhost และผู้ใช้ต้องอนุญาตสิทธิ์กล้องใน Browser
+- บนอุปกรณ์บางรุ่น การเลือกกล้อง/โหมดกล้องอาจขึ้นกับ Browser และระบบปฏิบัติการ
+- ยังไม่มี Auto Edge Detection หรือ Perspective Correction; การตัดขอบเป็นแบบระบุเปอร์เซ็นต์ด้วยตนเอง
+- HEIC/HEIF ยังไม่รับประกันการรองรับทุก Browser; แนะนำ JPG/PNG/WebP
+- ฟิลเตอร์เป็นการปรับภาพด้วย Canvas ไม่ใช่การปรับภาพอัจฉริยะ และภาพที่มืด/เอียง/สะท้อนแสงมากอาจอ่านยาก
+- ขนาด PDF และความคมชัดขึ้นกับความละเอียดภาพต้นฉบับและการตั้งค่าคุณภาพ
 
-ค่า Model ตั้งต้นใน `wrangler.toml` คือ `gpt-6-luna` เพื่อให้เหมาะกับงานปริมาณหลาย CV และสามารถเปลี่ยนเป็น Model ID ที่ Project มีสิทธิ์ใช้งานได้ โดยตั้งค่า `OPENAI_MODEL` ในไฟล์นี้
+### 3. การแก้ไขจาก Code Audit
 
-## 2. Deploy Cloudflare Worker
+- เพิ่ม/ตรวจ helper `extName()` ซึ่งใช้แยกนามสกุลไฟล์ใน Local CV Matcher และ HTML to PDF
+- แก้ Route ID ของ AI CV Matcher ให้เมนูหลักและการ์ดในหมวด HR ใช้ชื่อเดียวกัน
+- แก้การล้างข้อมูลทั้งหมดให้ล้างไฟล์และผลลัพธ์ Local CV Matcher ด้วย
+- หยุดกล้องเมื่อเปลี่ยนหน้า/ล้างข้อมูล เพื่อไม่ให้กล้องเปิดค้างโดยไม่จำเป็น
+- ทำให้การตั้งค่าคุณภาพ Scanner มีผลกับภาพที่ถ่ายไว้แล้วทุกหน้า
+- ทำให้เพดานจำนวนหน้าของ Scanner สอดคล้องกันที่ 20 หน้า
+- เพิ่ม Help Panel ให้เครื่องมือที่อยู่ใน Tool Catalog และหน้า Future Plan
 
-ต้องติดตั้ง Node.js และ Wrangler และ Login เข้า Cloudflare ก่อน
+## สถานะ Function และข้อจำกัดสำคัญ
 
-```bash
-npx wrangler login
-```
+| Function | สถานะในรุ่นนี้ | ข้อจำกัดที่ควรรู้ |
+|---|---|---|
+| PDF Checker & Automation Prep | ใช้งานได้แบบมีขอบเขต | ตรวจชื่อไฟล์ ขนาด และโครงสร้างเบื้องต้น ไม่รับประกันว่าไฟล์จะผ่านทุกระบบ Automation |
+| Image to PDF | ใช้งานได้ | รองรับ JPG/PNG/WebP; การบีบอัดภาพอาจลดรายละเอียด |
+| Merge / Split / Organize PDF | ใช้งานได้แบบมีขอบเขต | PDF มีรหัสผ่าน/โครงสร้างพิเศษ/ลายเซ็น/ฟอร์มอาจมีข้อจำกัด |
+| Compress PDF | ใช้งานได้แบบมีขอบเขต | Balanced/Strong อาจ Rasterize ทำให้ Text Layer และคุณภาพบางส่วนลดลง |
+| Protect / Unlock PDF | ควรหลีกเลี่ยงกับเอกสารสำคัญ | ใช้ RC4 แบบเก่าและ Rasterize; ไม่แนะนำสำหรับข้อมูลลับ |
+| Watermark / Page Numbers / Crop | ใช้งานได้แบบมีขอบเขต | Watermark เป็นภาพ; Crop เปลี่ยนกรอบแสดงผล ไม่ลบข้อมูลนอกกรอบ |
+| Repair PDF | Best effort | ไม่สามารถซ่อมไฟล์ทุกชนิด; วิธี Rasterize ทำให้ฟังก์ชันเอกสารบางอย่างหายไป |
+| PDF to Image | ใช้งานได้ | DPI สูงและหลายหน้าต้องใช้หน่วยความจำมาก |
+| JD / Interview / Invitation / Offer / Requisition | ใช้งานได้ในฐานะ Template | ตรวจข้อมูลและขออนุมัติก่อนใช้; PDF ที่เรนเดอร์จาก Canvas อาจเป็นภาพและค้นหาข้อความไม่ได้ |
+| Candidate Document Pack | ใช้งานได้แบบมีขอบเขต | รวม PDF เท่านั้น; HR ต้องตรวจว่าเป็นเอกสารของผู้สมัครรายเดียวกัน |
+| Candidate Lots | ใช้งานได้แบบมีขอบเขต | จัดกลุ่มตาม Prefix ชื่อไฟล์ ไม่ได้ยืนยันตัวตนผู้สมัคร |
+| Pre-send Checker | ใช้งานได้แบบมีขอบเขต | ตรวจคำ/หน้าว่าง/Metadata เบื้องต้น ไม่สามารถตรวจพบข้อมูลทุกชนิด โดยเฉพาะข้อความในภาพ |
+| Recipe Workflow | ใช้งานได้แบบมีขอบเขต | ทำตามลำดับคำสั่งที่ตั้งไว้ ต้องตรวจผลลัพธ์ทุกไฟล์ |
+| Compare PDFs | ใช้งานได้แบบมีขอบเขต | เปรียบเทียบ Text Layer ไม่ใช่ความต่างทางภาพหรือ Layout |
+| Sign PDF | ใช้งานได้แบบมีขอบเขต | เป็นภาพลายเซ็น ไม่ใช่ Digital Signature หรือการยืนยันตัวตน |
+| Fill PDF Form | ใช้งานได้แบบมีขอบเขต | ไม่รองรับ XFA และฟอนต์ภาษาไทยบางแบบ |
+| Redact PDF | ควรทดสอบอย่างเข้มงวดก่อนใช้จริง | หน้าเฉพาะที่ทำกรอบจะถูกแปลงเป็นภาพ; Metadata, ไฟล์แนบ, Bookmark หรือหน้าอื่นอาจยังมีข้อมูล ห้ามใช้กับข้อมูลลับจนกว่าจะตรวจครบ |
+| Prepare a Form | ใช้งานได้แบบมีขอบเขต | สร้าง AcroForm; ฟอนต์ Unicode/ไทยยังมีข้อจำกัด |
+| Local CV Matcher | ใช้งานได้เพื่อช่วยค้นหลักฐาน | Keyword Matching ตามกฎ ไม่ใช่ AI Model/semantic analysis; ห้ามใช้ตัดสินหรือจัดอันดับผู้สมัคร |
+| OCR PDF to TXT | ใช้งานได้แบบมีขอบเขต | OCR อาจอ่านภาษาไทย ตัวเลข และตารางผิด; ส่งออก TXT ไม่ใช่ Searchable PDF |
+| Edit PDF Overlay | ใช้งานได้แบบมีขอบเขต | เพิ่มข้อความ/รูป/Highlight แบบวางทับ ไม่ได้แก้ข้อความเดิม |
+| PDF to DOCX (Text Only) | ใช้งานได้แบบมีขอบเขต | ดึงเฉพาะ Text Layer ไม่รักษาตาราง รูปภาพ คอลัมน์ หรือ Layout |
+| HTML to PDF (Print) | ใช้งานได้แบบมีขอบเขต | ใช้ Print/Save as PDF ของ Browser; ไม่ใช่ HTML renderer เต็มรูปแบบ |
+| Document Scanner | เพิ่มใหม่; ต้องทดสอบอุปกรณ์จริง | สูงสุด 20 หน้า, 10 MB/รูป, ไม่มี Auto Perspective Correction |
+| Word / Excel / PowerPoint to PDF | Future Plan | ต้องใช้ Office/LibreOffice Engine ที่องค์กรอนุมัติ |
+| PDF to Word แบบรักษา Layout | Future Plan | ต้องใช้เอนจินแปลงเอกสารเฉพาะทาง |
+| OCR เป็น Searchable PDF | Future Plan | รุ่นนี้ส่งออก OCR เป็น TXT เท่านั้น |
+| Auto Edge Detection / Perspective Correction | Future Plan | Scanner รุ่นนี้ครอปด้วยค่าที่ผู้ใช้กำหนด |
 
-เปิด Terminal ในโฟลเดอร์นี้ ติดตั้ง Wrangler แล้ว Login:
+## Privacy และการทำงานใน Browser
 
-```bash
-npm install
-npx wrangler login
-```
+- Document Scanner, PDF Tools และ Local CV Matcher ในรุ่นนี้ทำงานประมวลผลเอกสารใน Browser และไม่ได้ส่งไฟล์ไป AI API หรือ Backend
+- อย่างไรก็ตาม หน้าเว็บยังโหลดไลบรารีและฟอนต์จาก CDN เช่น PDF.js, pdf-lib, jsPDF, JSZip, Google Fonts และ OCR Engine/Language Data จาก CDN เมื่อใช้ OCR
+- ดังนั้นจึงยังไม่ใช่ระบบ Offline หรือ No-CDN 100%; หากใช้ในองค์กรควร Bundle Dependencies และ Language Data ไว้ใน Hosting ที่องค์กรควบคุม
+- หลีกเลี่ยงการใช้ Protect/Unlock หรือ Redact กับเอกสารอ่อนไหวจนกว่าจะได้รับการทดสอบและอนุมัติจากทีมที่เกี่ยวข้อง
 
-สร้าง Secrets:
+## การตรวจสอบที่ทำได้ในรอบนี้
 
-```bash
-npx wrangler secret put OPENAI_API_KEY
-npx wrangler secret put APP_ACCESS_CODE
-```
+ดูรายละเอียดแยกตามรายการใน `AUDIT_REPORT_TH.md` โดยสรุปมีการตรวจ JavaScript Syntax, การมี View/Help ของเครื่องมือ, การผูก Action/Upload Handler, Local Matcher Logic และการประมวลผลภาพ Scanner ด้วยภาพตัวอย่างใน Browser จำลอง
 
-- `OPENAI_API_KEY` คือ API Key จริงของ OpenAI เก็บใน Worker Secret เท่านั้น
-- `APP_ACCESS_CODE` คือรหัสร่วมสำหรับ Prototype ให้ผู้ใช้กรอกในหน้าเว็บ (ไม่ใช่ API Key) ควรใช้รหัสสุ่มยาวและไม่ใช้ซ้ำกับบัญชีอื่น
-- Worker มี Rate Limiting binding ตั้งต้น 30 requests / 60 วินาทีต่อรหัสร่วม (เป็นการจำกัดแบบ Approximate ตาม Cloudflare) หาก `namespace_id` นี้ถูกใช้แล้วใน Cloudflare Account ของคุณ ให้เปลี่ยนเป็นเลขจำนวนเต็มที่ยังไม่ซ้ำ และใช้ Wrangler 4.36.0 ขึ้นไป
+## ก่อนใช้งานจริง ควรทดสอบบนอุปกรณ์ของทีม
 
-ตรวจสอบ `wrangler.toml` ก่อน Deploy:
-
-```toml
-[vars]
-ALLOWED_ORIGINS = "https://monogizmo.github.io,http://localhost:5500,http://127.0.0.1:5500"
-OPENAI_MODEL = "gpt-6-luna"
-```
-
-`ALLOWED_ORIGINS` ต้องตรงกับ Origin ของเว็บที่ใช้งานจริงทุกตัวอักษร ถ้าเปลี่ยนโดเมน GitHub Pages หรือใช้ Custom Domain ต้องแก้ค่านี้ด้วย
-
-Deploy:
-
-```bash
-npx wrangler deploy
-```
-
-หลัง Deploy จะได้ URL ประมาณ `https://hr-document-hub-ai.<account>.workers.dev`
-
-ทดลอง Health Check:
-
-```text
-https://<ชื่อ-worker>.<account>.workers.dev/health
-```
-
-ผลที่คาดหวังคือ JSON ที่มี `ok: true`
-
-## 3. เผยแพร่หน้าเว็บ
-
-1. นำ `index.html` จากชุดนี้ไปแทน `index.html` ใน Repository ของ GitHub Pages
-2. Commit และ Push ตามขั้นตอนของ Repository เดิม
-3. เปิดเว็บ แล้วไปที่เมนู **AI CV Matcher**
-4. กรอก Worker URL และ Shared Access Code ที่ผู้ดูแลระบบให้
-5. เลือก JD 1 ไฟล์ และ CV หลายไฟล์ แล้วกำหนด Criteria ให้ Weight รวม 100%
-6. ยืนยันการอนุญาตส่งข้อมูล แล้วกด Analyze
-
-**สำคัญ:** Worker URL เป็นข้อมูลสาธารณะได้ แต่ OpenAI API Key ต้องอยู่ใน Worker Secret เท่านั้น
-
-## 4. ขอบเขตของรุ่นนี้
-
-- JD: PDF หรือ DOCX, ไม่เกิน 10 MB, ข้อความไม่เกิน 25,000 ตัวอักษร
-- CV: PDF หรือ DOCX, สูงสุด 15 ไฟล์ต่อ Batch, ไม่เกิน 8 MB ต่อไฟล์ และไม่เกิน 45,000 ตัวอักษรต่อ CV
-- PDF ต้องมี Text Layer; PDF ที่เป็นภาพสแกนยังไม่รองรับ OCR และจะแสดงข้อความแจ้งเตือน
-- รองรับ DOCX ไม่รองรับ DOC รุ่นเก่า, XLSX หรือรูปภาพโดยตรง
-- ผลวิเคราะห์และไฟล์อยู่ในหน่วยความจำ Browser เท่านั้น รีเฟรชหรือปิดหน้าเว็บแล้วผลจะหาย
-- Export CSV ทำบน Browser และไม่ได้ส่งไฟล์ผลลัพธ์ไปเก็บใน Backend
-- Worker ไม่ใช้ Database, R2, KV หรือการบันทึกไฟล์
-- ระบบไม่ส่งชื่อไฟล์ของ CV ไปให้ AI แต่ใช้ Candidate 01, Candidate 02 ฯลฯ
-- ระบบพยายามปกปิดอีเมล เบอร์โทร เลขประจำตัว และบรรทัดข้อมูลส่วนตัวที่รู้จัก แต่เป็นเพียง Best-effort ไม่สามารถรับประกันว่าจะลบชื่อ ที่อยู่ หรือข้อมูลส่วนบุคคลทั้งหมดได้
-
-## 5. ความหมายของ Score
-
-คะแนนคำนวณใน Browser ไม่ได้ให้ AI คิดคะแนนแบบอิสระ:
-
-- `evidenced` = ได้ 100% ของน้ำหนักเกณฑ์
-- `partial` = ได้ 50% ของน้ำหนักเกณฑ์
-- `not_stated` = ได้ 0% เพราะ CV ไม่แสดงหลักฐานในเกณฑ์นั้น (ไม่ได้หมายความว่าผู้สมัครไม่มีทักษะ)
-- `unclear` = ไม่นำมาคิดในตัวหาร และแสดงน้ำหนักที่ต้องตรวจสอบเพิ่มเติม
-
-`Evidence Match Score` คือคะแนนหลักฐานที่ปรากฏในเอกสารเทียบกับเกณฑ์งาน ไม่ใช่คะแนนคุณค่าของผู้สมัคร ไม่ใช่ความน่าจะเป็นว่าจะทำงานได้ และห้ามใช้เป็นเกณฑ์ปฏิเสธหรือคัดออกโดยอัตโนมัติ
-
-`Assessment coverage` คือสัดส่วนน้ำหนักของเกณฑ์ที่ AI ประเมินได้ (ไม่นับ `unclear`) จึงควรอ่าน Score คู่กับ Coverage และหลักฐานอ้างอิงเสมอ
-
-## 6. Data Privacy และ Security — อ่านก่อนใช้ CV จริง
-
-- เมื่อใช้ AI CV Matcher ข้อความที่ดึงจาก JD/CV จะถูกส่งออกจาก Browser ไปยัง Worker และ OpenAI API ไม่ใช่ Local Processing เหมือน PDF Tools ทั่วไป
-- Worker ใช้ `store: false` ใน Responses API และไม่บันทึก CV/JD ลง Database หรือ Log
-- `store: false` ไม่ได้แปลว่า OpenAI ไม่มีการเก็บข้อมูลใด ๆ: เอกสาร OpenAI ระบุว่า Abuse Monitoring Logs อาจเก็บข้อมูลลูกค้าสูงสุด 30 วันโดยทั่วไป เว้นแต่ได้รับอนุมัติการควบคุมการเก็บข้อมูลแบบอื่น เช่น Zero Data Retention ซึ่งมีคุณสมบัติและการอนุมัติแยกต่างหาก
-- ก่อนนำ CV จริงมาใช้ ต้องให้ HR/DPO/Legal ตรวจสอบฐานการประมวลผล Privacy Notice ข้อตกลงผู้ให้บริการ และการอนุมัติจากองค์กร
-- ใช้ Synthetic / Dummy CV ในการ Demo และ QA ก่อน
-- ห้ามนำชื่อ รูปถ่าย วันเกิด อายุ เพศ ศาสนา สุขภาพ ความพิการ สถานภาพครอบครัว หรือข้อมูลอ่อนไหวมาเป็นเกณฑ์วิเคราะห์
-- ให้ AI วิเคราะห์หลักฐานตามเกณฑ์งานเท่านั้น และให้ HR เป็นผู้ตรวจสอบ/ตัดสินใจทุกครั้ง
-- Shared Access Code เป็นเพียง Gate เบื้องต้นสำหรับ Prototype ไม่ใช่ระบบยืนยันตัวตนพนักงานที่แข็งแรง ผู้มีสิทธิ์ใช้งานสามารถเห็นรหัสใน Browser DevTools ได้
-- ก่อนใช้ภายในองค์กรจริง แนะนำให้ป้องกัน Worker ด้วย Cloudflare Access/SSO, เพิ่ม Rate Limiting ฝั่ง Cloudflare, จำกัดผู้ใช้ และกำหนดงบประมาณ/Usage Limit ของ OpenAI Project
-- ปัจจุบัน CORS allowlist ช่วยจำกัด Browser Origin แต่ CORS ไม่ใช่ระบบ Authentication และไม่ป้องกันการเรียกจากเครื่องมือ Server-to-Server
-- Rate Limiting binding เป็นขีดจำกัดแบบ Approximate แยกตาม Cloudflare Location ไม่ใช่ Quota แบบ Strict ทั่วโลก หากต้องการโควตาเข้มงวดต่อบัญชี/ผู้ใช้ ให้พัฒนาร่วมกับ Durable Objects หรือระบบ Auth/Quota ขององค์กร
-
-## 7. ทดสอบก่อนใช้จริง
-
-1. เริ่มด้วย JD และ CV สมมติที่ไม่มีข้อมูลบุคคลจริง
-2. ทดสอบ PDF ที่มี Text Layer ภาษาไทยและอังกฤษ
-3. ทดสอบ DOCX ภาษาไทย รวมถึงเอกสารที่มีตารางและ Bullet
-4. ทดสอบ PDF สแกน เพื่อให้แน่ใจว่าระบบแจ้งว่าไม่รองรับ OCR แทนการส่งข้อความว่าง
-5. ทดสอบ CV ที่มี Email / Phone / เลขประจำตัว เพื่อทบทวนผลการปกปิด
-6. ทดสอบน้ำหนักเกณฑ์รวมไม่เท่ากับ 100 และชื่อเกณฑ์ซ้ำ
-7. ทดสอบ Worker URL ผิด, Access Code ผิด, Rate Limit, OpenAI API Key ผิด/ไม่มีเครดิต
-8. ให้ Recruiter เปรียบเทียบผล AI กับการอ่าน CV ด้วยตนเอง และตรวจว่า AI ไม่สร้างประสบการณ์หรือหลักฐานที่ไม่มีในเอกสาร
-9. ทดสอบ CV หลายรูปแบบและหลายภาษาเพื่อประเมินความสม่ำเสมอของผลลัพธ์
-
-## 8. สิ่งที่ยังไม่ได้ทำ / ยังไม่ได้ยืนยัน
-
-- ยังไม่ได้ Deploy Worker จริง เพราะต้องใช้ Cloudflare Account, OpenAI API Key และการตั้งค่าของเจ้าของระบบ
-- ยังไม่ได้เรียก OpenAI API จริงจากชุดนี้ การทดสอบ Worker ใช้ Mock Response เท่านั้น
-- ยังไม่ได้ทดสอบกับ CV จริงหรือไฟล์จากองค์กร
-- ยังไม่มี OCR สำหรับ PDF สแกน
-- ยังไม่มีระบบ Login / SSO แบบรายบุคคลหรือ Audit Trail
-- มี Rate Limiting binding ขั้นต้นใน Worker แล้ว แต่ยังไม่มี Login/SSO รายบุคคลหรือโควตาแบบ Strict ทั่วโลก
-
+1. เปิด GitHub Pages ผ่าน HTTPS บนโทรศัพท์ แล้วอนุญาตกล้อง
+2. ทดสอบกล้องหลัง/กล้องหน้า/เว็บแคม และกรณีปฏิเสธสิทธิ์กล้อง
+3. ถ่ายเอกสารหลายหน้า สลับลำดับ ลบหน้า หมุน ปรับ Filter และ Crop
+4. ทดสอบไฟล์ JPG/PNG/WebP ที่ขนาดใกล้ขีดจำกัด 10 MB
+5. สร้าง PDF A4/Letter แล้วเปิดใน PDF Reader บนมือถือและคอมพิวเตอร์
+6. ทดสอบ PDF จริงทุกเครื่องมือ โดยเฉพาะไฟล์ภาษาไทย ไฟล์มีรหัสผ่าน ฟอร์ม ลายเซ็น และเอกสารสแกน
+7. ตรวจผลลัพธ์ก่อนส่งให้ผู้สมัครหรือส่งเข้า Automation ทุกครั้ง
